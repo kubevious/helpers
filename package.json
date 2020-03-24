@@ -21,6 +21,8 @@
   "homepage": "https://github.com/kubevious/helpers#readme",
   "dependencies": {
     "moment": "^2.24.0",
-    "the-lodash": "^1.0.15"
+    "mysql2": "^2.1.0",
+    "the-lodash": "^1.0.15",
+    "the-promise": "^1.1.4"
   }
 }
