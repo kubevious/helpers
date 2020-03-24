@@ -1,0 +1,26 @@
+{
+  "name": "kubevious-helpers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kubevious/helpers.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kubevious/helpers/issues"
+  },
+  "homepage": "https://github.com/kubevious/helpers#readme",
+  "dependencies": {
+    "moment": "^2.24.0",
+    "the-lodash": "^1.0.15"
+  }
+}
