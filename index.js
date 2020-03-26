@@ -4,4 +4,6 @@ module.exports = {
     DnUtils: require("./lib/dn-utils"),
     MySqlDriver: require("./lib/mysql-driver"),
     EventDampener: require("./lib/event-dampener"),
+
+    History: require("./lib/history"),
 }
