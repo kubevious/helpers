@@ -1,4 +1,6 @@
 module.exports = {
+    HandledError: require("./lib/handled-error"),
+
     DateUtils: require("./lib/date-utils"),
     BufferUtils: require("./lib/buffer-utils"),
     DnUtils: require("./lib/dn-utils"),
