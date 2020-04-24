@@ -6,6 +6,7 @@ module.exports = {
     DnUtils: require("./lib/dn-utils"),
     Docs: require("./lib/docs"),
     MySqlDriver: require("./lib/mysql-driver"),
+    RedisClient: require("./lib/redis-client"),
     EventDampener: require("./lib/event-dampener"),
 
     History: require("./lib/history"),
