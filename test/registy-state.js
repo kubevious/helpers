@@ -7,7 +7,7 @@ describe('registry-state', function() {
 
     it('parse-small-test', function() {
         var snapshotInfo = FileUtils.readJsonData('snapshot-items-small.json');
-        var state = new RegistryState(null, snapshotInfo);
+        var state = new RegistryState(snapshotInfo);
 
         var nsNode = state.getNode('root/ns-[kube-public]');
         (nsNode).should.be.an.Object();
@@ -15,7 +15,7 @@ describe('registry-state', function() {
 
     it('parse-large-test', function() {
         var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
-        var state = new RegistryState(null, snapshotInfo);
+        var state = new RegistryState(snapshotInfo);
 
         var dn = 'root/ns-[kubevious]/app-[kubevious-ui]/launcher-[Deployment]';
         var deploymentNode = state.getNode(dn);
@@ -30,7 +30,7 @@ describe('registry-state', function() {
 
     it('findByKind', function() {
         var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
-        var state = new RegistryState(null, snapshotInfo);
+        var state = new RegistryState(snapshotInfo);
 
         var result = state.findByKind('launcher');
         (result).should.be.an.Object();
@@ -45,7 +45,7 @@ describe('registry-state', function() {
 
     it('scopeByKind', function() {
         var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
-        var state = new RegistryState(null, snapshotInfo);
+        var state = new RegistryState(snapshotInfo);
 
         var result = state.scopeByKind('root/ns-[kubevious]', 'launcher');
         (result).should.be.an.Object();
@@ -60,7 +60,7 @@ describe('registry-state', function() {
 
     it('childrenByKind', function() {
         var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
-        var state = new RegistryState(null, snapshotInfo);
+        var state = new RegistryState(snapshotInfo);
 
         var result = state.childrenByKind('root/ns-[kubevious]/app-[kubevious-ui]', 'service');
         (result).should.be.an.Object();

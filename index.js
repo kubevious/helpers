@@ -10,4 +10,6 @@ module.exports = {
     EventDampener: require("./lib/event-dampener"),
 
     History: require("./lib/history"),
+
+    RegistryState: require("./lib/registry-state"),
 }
