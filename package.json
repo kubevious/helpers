@@ -28,6 +28,7 @@
     "mysql2": "^2.1.0",
     "redis": "^3.0.2",
     "the-lodash": "^1.0.15",
+    "the-logger": "^1.1.22",
     "the-promise": "^1.1.4"
   }
 }
