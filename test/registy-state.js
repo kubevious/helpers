@@ -71,4 +71,12 @@ describe('registry-state', function() {
         (item.rn).should.be.equal('service-[NodePort]');
     });
 
+    it('build-tree', function() {
+        var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
+        var state = new RegistryState(snapshotInfo);
+
+        var tree = state.getTree();
+        (tree).should.be.an.Object();
+    })
+
 });
