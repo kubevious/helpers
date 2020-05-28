@@ -79,4 +79,41 @@ describe('registry-state', function() {
         (tree).should.be.an.Object();
     })
 
+    it('build-bundle', function() {
+        var snapshotInfo = FileUtils.readJsonData('snapshot-items-small.json');
+        var state = new RegistryState(snapshotInfo);
+
+        var bundle = state.buildBundle();
+        (bundle).should.be.an.Object();
+        (bundle.nodes).should.be.an.Array();
+        (bundle.children).should.be.an.Array();
+        (bundle.assets).should.be.an.Array();
+
+        for(var item of bundle.nodes)
+        {
+            (item).should.be.an.Object();
+            (item.dn).should.be.a.String();
+            (item.config).should.be.an.Object();
+            (item.config_hash).should.be.a.String();
+        }
+
+        for(var item of bundle.children)
+        {
+            (item).should.be.an.Object();
+            (item.dn).should.be.a.String();
+            (item.config).should.be.an.Array();
+            (item.config_hash).should.be.a.String();
+        }
+
+        for(var item of bundle.assets)
+        {
+            (item).should.be.an.Object();
+            (item.dn).should.be.a.String();
+            (item.config).should.be.an.Object();
+            (item.config.props).should.be.an.Object();
+            (item.config.alerts).should.be.an.Array();
+            (item.config_hash).should.be.a.String();
+        }
+    })
+
 });
