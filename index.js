@@ -17,4 +17,6 @@ module.exports = {
     History: require("./lib/history"),
 
     RegistryState: require("./lib/registry-state"),
+
+    ProcessingTracker: require("./lib/processing-tracker")
 }
