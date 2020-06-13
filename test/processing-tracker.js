@@ -18,7 +18,7 @@ describe('processing-tracker', function() {
                 var task = processingTracker.getTaskInfo("doSomething");
                 should(task.failed).not.be.true();
                 (task.duration).should.not.be.above(400);
-                (task.duration).should.not.be.below(200);
+                (task.duration).should.not.be.below(150);
             }
         })
     });
@@ -37,14 +37,14 @@ describe('processing-tracker', function() {
                 var task = processingTracker.getTaskInfo("doSomething");
                 should(task.failed).not.be.true();
                 (task.duration).should.not.be.above(700);
-                (task.duration).should.not.be.below(400);
+                (task.duration).should.not.be.below(350);
             }
 
             {
                 var task = processingTracker.getTaskInfo("doSomething/another");
                 should(task.failed).not.be.true();
                 (task.duration).should.not.be.above(400);
-                (task.duration).should.not.be.below(300);
+                (task.duration).should.not.be.below(250);
             }
         })
     });
@@ -65,7 +65,7 @@ describe('processing-tracker', function() {
                 var task = processingTracker.getTaskInfo("doSomething");
                 (task.failed).should.be.true();
                 (task.duration).should.not.be.above(300);
-                (task.duration).should.not.be.below(100);
+                (task.duration).should.not.be.below(50);
             }
         })
     });
