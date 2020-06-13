@@ -70,8 +70,20 @@ describe('processing-tracker', function() {
         })
     });
 
+    it('test-4', function() {
+        var processingTracker = new ProcessingTracker(logger);
 
-    it('test-3', function() {
+        return processingTracker.scope("doSomething", () => {
+            return Promise.timeout(100)
+                .then(() => 1234)
+        })
+        .then(result => { 
+            (result).should.be.equal(1234);
+        })
+    });
+
+
+    it('test-debug-output', function() {
         var processingTracker = new ProcessingTracker(logger);
         processingTracker.enablePeriodicDebugOutput(1);
         processingTracker.disablePeriodicDebugOutput();
