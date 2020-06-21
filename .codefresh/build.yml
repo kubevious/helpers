@@ -22,38 +22,37 @@ steps:
     commands:
       - npm install
       - npm install --only=dev
-
-      run_unit_test:
-        title: Run Unit Tests
-        stage: test
-        image: 'kubevious/node-builder:12'
-        working_directory: "${{clone}}"
-        environment:
-          - "MYSQL_HOST=mysql"
-          - "MYSQL_PORT=3306"
-          - "MYSQL_DB=sample-db"
-          - "MYSQL_USER=root"
-          - "MYSQL_PASS="
-        commands:
-          - pwd
-          - ls -la
-          - npm test
-        services:
-          composition:
-            mysql:
-              image: mysql:8.0.19
-              ports:
-                - 3306
-              environment:
-                - "MYSQL_DATABASE=sample-db"
-                - "MYSQL_ALLOW_EMPTY_PASSWORD=yes"
-              command: --default-authentication-plugin=mysql_native_password
-          readiness:
+    run_unit_test:
+      title: Run Unit Tests
+      stage: test
+      image: 'kubevious/node-builder:12'
+      working_directory: "${{clone}}"
+      environment:
+        - "MYSQL_HOST=mysql"
+        - "MYSQL_PORT=3306"
+        - "MYSQL_DB=sample-db"
+        - "MYSQL_USER=root"
+        - "MYSQL_PASS="
+      commands:
+        - pwd
+        - ls -la
+        - npm test
+      services:
+        composition:
+          mysql:
             image: mysql:8.0.19
-            timeoutSeconds: 90
-            volumes:
-              - './${{CF_REPO_NAME}}/mysql:/my-init-script'
-            commands:
-              - "mysql --host=mysql --user=root --password= sample-db -e \"show databases;\""    
-              - "mysql --host=mysql --user=root --password= sample-db < /my-init-script/init.sql"
-              - "mysql --host=mysql --user=root --password= sample-db -e \"show tables;\""    
+            ports:
+              - 3306
+            environment:
+              - "MYSQL_DATABASE=sample-db"
+              - "MYSQL_ALLOW_EMPTY_PASSWORD=yes"
+            command: --default-authentication-plugin=mysql_native_password
+        readiness:
+          image: mysql:8.0.19
+          timeoutSeconds: 90
+          volumes:
+            - './${{CF_REPO_NAME}}/mysql:/my-init-script'
+          commands:
+            - "mysql --host=mysql --user=root --password= sample-db -e \"show databases;\""    
+            - "mysql --host=mysql --user=root --password= sample-db < /my-init-script/init.sql"
+            - "mysql --host=mysql --user=root --password= sample-db -e \"show tables;\""    
