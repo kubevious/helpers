@@ -8,13 +8,13 @@ function buildTestSuite(isDebug) {
 describe('data-store', function() {
 
     it('constructor', function() {
-        var dataStore = new DataStore(logger, null, isDebug);
+        var dataStore = new DataStore(logger, isDebug);
         dataStore.close();
     });
 
 
     it('connect', function() {
-        var dataStore = new DataStore(logger, null, isDebug);
+        var dataStore = new DataStore(logger, isDebug);
         (dataStore.isConnected).should.be.false();
         dataStore.connect();
         return dataStore.waitConnect()
@@ -26,7 +26,7 @@ describe('data-store', function() {
 
 
     it('query-all-empty', function() {
-        var dataStore = new DataStore(logger, null, isDebug);
+        var dataStore = new DataStore(logger, isDebug);
 
         dataStore.meta()
             .table('contacts')
@@ -49,7 +49,7 @@ describe('data-store', function() {
 
 
     it('query-all-one', function() {
-        var dataStore = new DataStore(logger, null, isDebug);
+        var dataStore = new DataStore(logger, isDebug);
 
         dataStore.meta()
             .table('contacts')
@@ -75,7 +75,7 @@ describe('data-store', function() {
     });
 
     it('query-all-two', function() {
-        var dataStore = new DataStore(logger, null, isDebug);
+        var dataStore = new DataStore(logger, isDebug);
 
         dataStore.meta()
             .table('contacts')
@@ -99,7 +99,7 @@ describe('data-store', function() {
     });
 
     it('query-single', function() {
-        var dataStore = new DataStore(logger, null, isDebug);
+        var dataStore = new DataStore(logger, isDebug);
 
         dataStore.meta()
             .table('contacts')
@@ -130,7 +130,7 @@ describe('data-store', function() {
     });
 
     it('create', function() {
-        var dataStore = new DataStore(logger, null, isDebug);
+        var dataStore = new DataStore(logger, isDebug);
 
         dataStore.meta()
             .table('contacts')
@@ -163,7 +163,7 @@ describe('data-store', function() {
 
 
     it('delete', function() {
-        var dataStore = new DataStore(logger, null, isDebug);
+        var dataStore = new DataStore(logger, isDebug);
 
         dataStore.meta()
             .table('contacts')
@@ -196,7 +196,7 @@ describe('data-store', function() {
 
 
     it('update', function() {
-        var dataStore = new DataStore(logger, null, isDebug);
+        var dataStore = new DataStore(logger, isDebug);
 
         dataStore.meta()
             .table('contacts')
