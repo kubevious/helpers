@@ -7,8 +7,7 @@ module.exports = {
     HashUtils: require("./lib/hash-utils"),
     Docs: require("./lib/docs"),
 
-    MySqlDriver: require("./lib/mysql-driver"),
-    MySqlTableSynchronizer: require("./lib/mysql-table-synchronizer"),
+    DataStore: require("./lib/data-store/data-store"),
     
     RedisClient: require("./lib/redis-client"),
 
