@@ -226,37 +226,50 @@ describe('data-store', function() {
     });
 
 
-    it('delete', function() {
+
+    it('create-or-update', function() {
         var dataStore = new DataStore(logger, isDebug);
 
         dataStore.meta()
-            .table('contacts')
-                .key('id')
+            .table('users')
                 .field('name')
+                    .settable()
                 .field('email')
 
-        var table = dataStore.table('contacts');
+        var table = dataStore.table('users');
 
         dataStore.connect();
         return dataStore.waitConnect()
-            .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
-            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
-            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('bruce', 'bruce@lee.com');"))
-            .then(() => table.queryMany())
+            .then(() => dataStore.mysql.executeSql("DELETE FROM `users`;"))
+            .then(() => table.createOrUpdate({ name: 'Chuck', email: 'chuck@norris.io' }))
             .then(result => {
-                var myId = result.filter(x => x.name == 'bruce')[0].id;
-                return table.delete({id: myId});
+                (result).should.be.Object();
+                (result.name).should.be.equal('Chuck');
+                (result.email).should.be.equal('chuck@norris.io');
             })
             .then(() => table.queryMany())
             .then(result => {
                 (result).should.be.an.Array();
                 (result.length).should.be.equal(1);
-                (result[0].id).should.be.a.Number();
-                (result[0].name).should.be.equal('john');
-                (result[0].email).should.be.equal('john@doe.com');
+                (result[0].name).should.be.equal('Chuck');
+                (result[0].email).should.be.equal('chuck@norris.io');
+            })
+            .then(() => table.createOrUpdate({ name: 'Chuck', email: 'chuck@norris.com' }))
+            .then(result => {
+                (result).should.be.Object();
+                (result.name).should.be.equal('Chuck');
+                (result.email).should.be.equal('chuck@norris.com');
+            })
+            .then(() => table.queryMany())
+            .then(result => {
+                (result).should.be.an.Array();
+                (result[0].name).should.be.equal('Chuck');
+                (result[0].email).should.be.equal('chuck@norris.com');
             })
             .then(() => dataStore.close())
     });
+
+
 
 
     it('update', function() {
@@ -300,6 +313,39 @@ describe('data-store', function() {
             .then(() => dataStore.close())
     });
 
+
+
+    it('delete', function() {
+        var dataStore = new DataStore(logger, isDebug);
+
+        dataStore.meta()
+            .table('contacts')
+                .key('id')
+                .field('name')
+                .field('email')
+
+        var table = dataStore.table('contacts');
+
+        dataStore.connect();
+        return dataStore.waitConnect()
+            .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('bruce', 'bruce@lee.com');"))
+            .then(() => table.queryMany())
+            .then(result => {
+                var myId = result.filter(x => x.name == 'bruce')[0].id;
+                return table.delete({id: myId});
+            })
+            .then(() => table.queryMany())
+            .then(result => {
+                (result).should.be.an.Array();
+                (result.length).should.be.equal(1);
+                (result[0].id).should.be.a.Number();
+                (result[0].name).should.be.equal('john');
+                (result[0].email).should.be.equal('john@doe.com');
+            })
+            .then(() => dataStore.close())
+    });
 
 
     it('sync-id-column', function() {
