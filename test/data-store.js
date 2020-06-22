@@ -428,8 +428,6 @@ describe('data-store', function() {
             ]))
             .then(() => table.queryMany())
             .then(result => {
-                logger.info(result);
-
                 (result).should.be.an.Array();
                 (result.length).should.be.equal(2);
 
@@ -446,6 +444,59 @@ describe('data-store', function() {
             })
             .then(() => dataStore.close())
     });
+
+
+    it('sync-name-skip-delete', function() {
+        var dataStore = new DataStore(logger, isDebug);
+
+        dataStore.meta()
+            .table('users')
+                .key('name')
+                    .settable()
+                .field('email')
+
+        var table = dataStore.table('users');
+        var sync = table.synchronizer(null, true);
+
+        dataStore.connect();
+        return dataStore.waitConnect()
+            .then(() => dataStore.mysql.executeSql("DELETE FROM `users`;"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `users`(`name`, `email`) VALUES('john', 'john@doe.com');"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `users`(`name`, `email`) VALUES('chuck', 'chuck@norris.com');"))
+            .then(() => sync.execute([
+                {
+                    name: 'bruce',
+                    email: 'b@lee.com'
+                },
+                {
+                    name: 'chuck',
+                    email: 'chuck@lee.com'
+                }
+            ]))
+            .then(() => table.queryMany())
+            .then(result => {
+                (result).should.be.an.Array();
+                (result.length).should.be.equal(3);
+
+                var johnObj = result.filter(x => x.name == 'john')[0];
+                (johnObj).should.be.an.Object();
+                (johnObj.name).should.be.equal('john');
+                (johnObj.email).should.be.equal('john@doe.com');
+
+                var chuckObj = result.filter(x => x.name == 'chuck')[0];
+                (chuckObj).should.be.an.Object();
+                (chuckObj.name).should.be.equal('chuck');
+                (chuckObj.email).should.be.equal('chuck@lee.com');
+                
+                var bruceObj = result.filter(x => x.name == 'bruce')[0];
+                (bruceObj).should.be.an.Object();
+                (bruceObj.name).should.be.equal('bruce');
+                (bruceObj.email).should.be.equal('b@lee.com');
+
+            })
+            .then(() => dataStore.close())
+    });
+
 
 });
 
