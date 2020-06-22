@@ -39,7 +39,7 @@ describe('data-store', function() {
         dataStore.connect();
         return dataStore.waitConnect()
             .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
-            .then(() => table.queryAll())
+            .then(() => table.queryMany())
             .then(result => {
                 (result).should.be.an.Array();
                 (result.length).should.be.equal(0);
@@ -63,7 +63,7 @@ describe('data-store', function() {
         return dataStore.waitConnect()
             .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
             .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
-            .then(() => table.queryAll())
+            .then(() => table.queryMany())
             .then(result => {
                 (result).should.be.an.Array();
                 (result.length).should.be.equal(1);
@@ -90,13 +90,77 @@ describe('data-store', function() {
             .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
             .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
             .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('bruce', 'bruce@lee.com');"))
-            .then(() => table.queryAll())
+            .then(() => table.queryMany())
             .then(result => {
                 (result).should.be.an.Array();
                 (result.length).should.be.equal(2);
             })
             .then(() => dataStore.close())
     });
+
+
+    it('query-filter', function() {
+        var dataStore = new DataStore(logger, isDebug);
+
+        dataStore.meta()
+            .table('contacts')
+                .key('id')
+                .field('name')
+                .field('email')
+
+        var table = dataStore.table('contacts');
+
+        dataStore.connect();
+        return dataStore.waitConnect()
+            .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('chuck', 'chuck@norris.com');"))
+            .then(() => table.queryMany({ email: 'john@doe.com'}))
+            .then(result => {
+                (result).should.be.an.Array();
+                (result.length).should.be.equal(1);
+
+                var john = result[0];
+                (john).should.be.an.Object();
+                (john.name).should.be.equal('john');
+                (john.email).should.be.equal('john@doe.com');
+            })
+            .then(() => dataStore.close())
+    });
+
+
+    it('query-multiple-other-fields', function() {
+        var dataStore = new DataStore(logger, isDebug);
+
+        dataStore.meta()
+            .table('contacts')
+                .key('id')
+                .field('name')
+                .field('email')
+
+        var table = dataStore.table('contacts');
+
+        dataStore.connect();
+        return dataStore.waitConnect()
+            .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('chuck', 'chuck@norris.com');"))
+            .then(() => table.queryMany(null, ['email']))
+            .then(result => {
+                (result).should.be.an.Array();
+                (result.length).should.be.equal(2);
+                for(var x of result)
+                {
+                    (_.keys(x).length).should.be.equal(1);
+                }
+                var john = result.filter(x => x.email == 'john@doe.com')[0];
+                var chuck = result.filter(x => x.email == 'chuck@norris.com')[0];
+                (john).should.be.an.Object();
+                (chuck).should.be.an.Object();
+            })
+            .then(() => dataStore.close())
+    });
+
 
     it('query-single', function() {
         var dataStore = new DataStore(logger, isDebug);
@@ -114,10 +178,10 @@ describe('data-store', function() {
             .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
             .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
             .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('bruce', 'bruce@lee.com');"))
-            .then(() => table.queryAll())
+            .then(() => table.queryMany())
             .then(result => {
                 var myId = result.filter(x => x.name == 'bruce')[0].id;
-                return table.query({id: myId});
+                return table.querySingle({id: myId});
             })
             .then(result => {
                 console.log(result);
@@ -150,7 +214,7 @@ describe('data-store', function() {
                 (result.name).should.be.equal('Chuck');
                 (result.email).should.be.equal('chuck@norris.io');
             })
-            .then(() => table.queryAll())
+            .then(() => table.queryMany())
             .then(result => {
                 (result).should.be.an.Array();
                 (result.length).should.be.equal(1);
@@ -178,12 +242,12 @@ describe('data-store', function() {
             .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
             .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
             .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('bruce', 'bruce@lee.com');"))
-            .then(() => table.queryAll())
+            .then(() => table.queryMany())
             .then(result => {
                 var myId = result.filter(x => x.name == 'bruce')[0].id;
                 return table.delete({id: myId});
             })
-            .then(() => table.queryAll())
+            .then(() => table.queryMany())
             .then(result => {
                 (result).should.be.an.Array();
                 (result.length).should.be.equal(1);
@@ -211,12 +275,12 @@ describe('data-store', function() {
             .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
             .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
             .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('bruce', 'bruce@lee.com');"))
-            .then(() => table.queryAll())
+            .then(() => table.queryMany())
             .then(result => {
                 var myId = result.filter(x => x.name == 'bruce')[0].id;
                 return table.update({id: myId}, {name: 'Bruce'});
             })
-            .then(() => table.queryAll())
+            .then(() => table.queryMany())
             .then(result => {
                 (result).should.be.an.Array();
                 (result.length).should.be.equal(2);
@@ -232,6 +296,107 @@ describe('data-store', function() {
                 (bruceObj.id).should.be.a.Number();
                 (bruceObj.name).should.be.equal('Bruce');
                 (bruceObj.email).should.be.equal('bruce@lee.com');
+            })
+            .then(() => dataStore.close())
+    });
+
+
+
+    it('sync-id-column', function() {
+        var dataStore = new DataStore(logger, isDebug);
+
+        dataStore.meta()
+            .table('contacts')
+                .key('id')
+                .field('name')
+                .field('email')
+
+        var table = dataStore.table('contacts');
+        var sync = table.synchronizer();
+
+        dataStore.connect();
+        return dataStore.waitConnect()
+            .then(() => dataStore.mysql.executeSql("DELETE FROM `contacts`;"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('john', 'john@doe.com');"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `contacts`(`name`, `email`) VALUES('chuck', 'chuck@norris.com');"))
+            .then(() => sync.execute([
+                {
+                    name: 'bruce',
+                    email: 'b@lee.com'
+                },
+                {
+                    name: 'chuck',
+                    email: 'chuck@lee.com'
+                }
+            ]))
+            .then(() => table.queryMany())
+            .then(result => {
+                logger.info(result);
+
+                (result).should.be.an.Array();
+                (result.length).should.be.equal(2);
+
+                var chuckObj = result.filter(x => x.name == 'chuck')[0];
+                (chuckObj).should.be.an.Object();
+                (chuckObj.id).should.be.a.Number();
+                (chuckObj.name).should.be.equal('chuck');
+                (chuckObj.email).should.be.equal('chuck@lee.com');
+                
+                var bruceObj = result.filter(x => x.name == 'bruce')[0];
+                (bruceObj).should.be.an.Object();
+                (bruceObj.id).should.be.a.Number();
+                (bruceObj.name).should.be.equal('bruce');
+                (bruceObj.email).should.be.equal('b@lee.com');
+
+            })
+            .then(() => dataStore.close())
+    });
+
+
+    it('sync-name', function() {
+        var dataStore = new DataStore(logger, isDebug);
+
+        dataStore.meta()
+            .table('users')
+                .key('name')
+                    .settable()
+                .field('email')
+
+        var table = dataStore.table('users');
+        var sync = table.synchronizer();
+
+        dataStore.connect();
+        return dataStore.waitConnect()
+            .then(() => dataStore.mysql.executeSql("DELETE FROM `users`;"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `users`(`name`, `email`) VALUES('john', 'john@doe.com');"))
+            .then(() => dataStore.mysql.executeSql("INSERT INTO `users`(`name`, `email`) VALUES('chuck', 'chuck@norris.com');"))
+            .then(() => sync.execute([
+                {
+                    name: 'bruce',
+                    email: 'b@lee.com'
+                },
+                {
+                    name: 'chuck',
+                    email: 'chuck@lee.com'
+                }
+            ]))
+            .then(() => table.queryMany())
+            .then(result => {
+                logger.info(result);
+
+                (result).should.be.an.Array();
+                (result.length).should.be.equal(2);
+
+                var chuckObj = result.filter(x => x.name == 'chuck')[0];
+                (chuckObj).should.be.an.Object();
+                (chuckObj.name).should.be.equal('chuck');
+                (chuckObj.email).should.be.equal('chuck@lee.com');
+                
+                var bruceObj = result.filter(x => x.name == 'bruce')[0];
+                (bruceObj).should.be.an.Object();
+                (bruceObj.name).should.be.equal('bruce');
+                (bruceObj.email).should.be.equal('b@lee.com');
+
             })
             .then(() => dataStore.close())
     });

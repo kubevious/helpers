@@ -19,8 +19,7 @@ CREATE TABLE IF NOT EXISTS `clusters` (
 
 
 CREATE TABLE IF NOT EXISTS `users` (
-  `project_id` VARCHAR(255) NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
-  PRIMARY KEY (`project_id`, `name`)
+  PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
