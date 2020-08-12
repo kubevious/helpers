@@ -5,3 +5,5 @@ cd $MY_DIR
 
 npm install
 npm install --only-dev
+
+npm update kubevious-helper-mysql the-lodash the-logger the-promise

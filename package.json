@@ -26,10 +26,8 @@
   "dependencies": {
     "kubevious-helper-mysql": "git+https://github.com/kubevious/helper-mysql.git",
     "moment": "^2.24.0",
-    "mysql2": "^2.1.0",
-    "redis": "^3.0.2",
-    "the-lodash": "^1.0.15",
+    "the-lodash": "^1.1.1",
     "the-logger": "^1.1.22",
-    "the-promise": "^1.1.4"
+    "the-promise": "^1.2.3"
   }
 }

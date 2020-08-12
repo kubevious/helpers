@@ -9,8 +9,6 @@ module.exports = {
 
     DataStore: require("./lib/data-store/data-store"),
     
-    RedisClient: require("./lib/redis-client"),
-
     EventDampener: require("./lib/event-dampener"),
 
     History: require("./lib/history"),
