@@ -130,10 +130,28 @@ describe('registry-state', function() {
         }
 
         {
-            var myItemAlerts = _.find(bundle.alerts, x => x.dn == 'root/ns-[kube-system]/raw-[Raw Configs]');
+            var myDn = 'root/ns-[kube-system]';
+            var myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
             (myItemAlerts).should.be.an.Object();
+
+            var myNode = state.getNode(myDn);
+
+            should(myNode.node.selfAlertCount).be.eql({});
+            should(myNode.node.alertCount).be.eql({ error: 11, warn: 11 });
+
             should(myItemAlerts.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]']).be.not.ok();
             should(myItemAlerts.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]/configmap-[istio.v1]']).be.ok();
+        }
+
+        {
+            var myDn = 'root/ns-[kube-system]/app-[fluentd-gcp-scaler]';
+            var myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
+            (myItemAlerts).should.be.an.Object();
+
+            var myNode = state.getNode(myDn);
+
+            should(myNode.node.selfAlertCount).be.eql({ error: 1});
+            should(myNode.node.alertCount).be.eql({ error: 1 });
         }
     })
 
