@@ -16,16 +16,22 @@ describe('registry-state', function() {
     it('parse-large-test', function() {
         var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
         var state = new RegistryState(snapshotInfo);
+        state.finalizeState();
 
         var dn = 'root/ns-[kubevious]/app-[kubevious-ui]/launcher-[Deployment]';
         var deploymentNode = state.getNode(dn);
         (deploymentNode).should.be.an.Object();
 
-        var assets = state.getAssets(dn);
-        (assets).should.be.an.Object();
-        (assets.props).should.be.an.Object();
-        (assets.props['config']).should.be.an.Object();
-        (assets.alerts).should.be.an.Array;
+        var props = state.getProperties(dn);
+        (props).should.be.an.Object();
+        (props['config']).should.be.an.Object();
+
+        var alerts = state.getAlerts(dn);
+        (alerts).should.be.an.Array;
+
+        var hierarchyAlerts = state.getHierarchyAlerts(dn);
+        (hierarchyAlerts).should.be.an.Array;
+
     })
 
     it('findByKind', function() {
@@ -82,12 +88,14 @@ describe('registry-state', function() {
     it('build-bundle', function() {
         var snapshotInfo = FileUtils.readJsonData('snapshot-items-small.json');
         var state = new RegistryState(snapshotInfo);
+        state.finalizeState();
 
         var bundle = state.buildBundle();
         (bundle).should.be.an.Object();
         (bundle.nodes).should.be.an.Array();
         (bundle.children).should.be.an.Array();
-        (bundle.assets).should.be.an.Array();
+        (bundle.properties).should.be.an.Array();
+        (bundle.alerts).should.be.an.Array();
 
         for(var item of bundle.nodes)
         {
@@ -105,14 +113,27 @@ describe('registry-state', function() {
             (item.config_hash).should.be.a.String();
         }
 
-        for(var item of bundle.assets)
+        for(var item of bundle.properties)
         {
             (item).should.be.an.Object();
             (item.dn).should.be.a.String();
             (item.config).should.be.an.Object();
-            (item.config.props).should.be.an.Object();
-            (item.config.alerts).should.be.an.Array();
             (item.config_hash).should.be.a.String();
+        }
+
+        for(var item of bundle.alerts)
+        {
+            (item).should.be.an.Object();
+            (item.dn).should.be.a.String();
+            (item.config).should.be.an.Object();
+            (item.config_hash).should.be.a.String();
+        }
+
+        {
+            var myItemAlerts = _.find(bundle.alerts, x => x.dn == 'root/ns-[kube-system]/raw-[Raw Configs]');
+            (myItemAlerts).should.be.an.Object();
+            should(myItemAlerts.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]']).be.not.ok();
+            should(myItemAlerts.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]/configmap-[istio.v1]']).be.ok();
         }
     })
 
