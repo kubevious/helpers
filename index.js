@@ -15,5 +15,8 @@ module.exports = {
 
     RegistryState: require("./lib/registry-state"),
 
-    ProcessingTracker: require("./lib/processing-tracker")
+    ProcessingTracker: require("./lib/processing-tracker"),
+
+    RetryableAction: require("./lib/retryable-action"),
+
 }
