@@ -24,7 +24,6 @@
     "should": "^13.2.3"
   },
   "dependencies": {
-    "kubevious-helper-mysql": "git+https://github.com/kubevious/helper-mysql.git",
     "moment": "^2.24.0",
     "the-lodash": "^1.2.2",
     "the-logger": "^1.1.22",
