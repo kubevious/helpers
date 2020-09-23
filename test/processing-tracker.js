@@ -16,10 +16,12 @@ describe('processing-tracker', function() {
         .then(() => {
             {
                 var task = processingTracker.getTaskInfo("doSomething");
-                should(task.failed).not.be.true();
-                (task.duration).should.not.be.above(400);
-                (task.duration).should.not.be.below(150);
+                should(task.failed).be.false();
+                (task.duration).should.be.below(400);
+                (task.duration).should.be.above(150);
             }
+
+            processingTracker.debugOutput();
         })
     });
 
@@ -36,16 +38,18 @@ describe('processing-tracker', function() {
             {
                 var task = processingTracker.getTaskInfo("doSomething");
                 should(task.failed).not.be.true();
-                (task.duration).should.not.be.above(700);
-                (task.duration).should.not.be.below(350);
+                (task.duration).should.be.below(700);
+                (task.duration).should.be.above(350);
             }
 
             {
                 var task = processingTracker.getTaskInfo("doSomething/another");
                 should(task.failed).not.be.true();
-                (task.duration).should.not.be.above(400);
-                (task.duration).should.not.be.below(250);
+                (task.duration).should.be.below(400);
+                (task.duration).should.be.above(250);
             }
+
+            processingTracker.debugOutput();
         })
     });
 
@@ -68,6 +72,9 @@ describe('processing-tracker', function() {
                 (task.duration).should.not.be.below(50);
             }
         })
+        .then(() => {
+            processingTracker.debugOutput();
+        })
     });
 
     it('test-4', function() {
@@ -79,6 +86,74 @@ describe('processing-tracker', function() {
         })
         .then(result => { 
             (result).should.be.equal(1234);
+        })
+        .then(() => {
+            processingTracker.debugOutput();
+        })
+        .then(() => {
+            const data = processingTracker.extract();
+            logger.info('EXTRACTED DATA', data);
+        })
+    });
+
+
+    it('test-5', function() {
+        var processingTracker = new ProcessingTracker(logger);
+
+        let myExtractedData = null;
+
+        processingTracker.registerListener(extractedData => {
+            myExtractedData = extractedData;
+            
+        })
+
+        return processingTracker.scope("doSomething", (childTracker) => {
+
+            return Promise.serial([1, 2, 3, 4], x => {
+                return childTracker.scope("ITEM-" + x, () => {
+                    return Promise.timeout(100)
+                        .then(() => x + 1);
+                })
+            })
+        })
+        .then(result => { 
+            (result).should.be.eql([2, 3, 4, 5]);
+        })
+        .then(() => {
+            processingTracker.debugOutput();
+        })
+        .then(() => {
+            logger.info('EXTRACTED DATA', myExtractedData);
+            should(myExtractedData).be.an.Array();
+        })
+    });
+
+    it('test-5', function() {
+        var processingTracker = new ProcessingTracker(logger);
+
+        return Promise.serial([1, 2, 3, 4, 5, 6, 7, 8], x => {
+            return processingTracker.scope("doSomething", (childTracker) => {
+                return Promise.timeout(x * 10);
+            });
+        })
+        .then(() => {
+            processingTracker.debugOutput();
+        })
+        .then(() => {
+            const data = processingTracker.extract();
+            logger.info('EXTRACTED DATA', data);
+            should(data).be.an.Array();
+            for(var x of data)
+            {
+                should(x).be.an.Object();
+                should(x.name).be.equal("doSomething")
+                should(x.results).be.an.Array();
+                for(var r of x.results)
+                {
+                    should(r.duration).be.a.Number();
+                    should(r.failed).be.false();
+                }
+            }
         })
     });
 
