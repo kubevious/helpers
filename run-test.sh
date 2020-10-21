@@ -9,4 +9,4 @@ export MYSQL_DB=sample-db
 export MYSQL_USER=root
 export MYSQL_PASS=
 
-mocha -g series-resampler
+mocha

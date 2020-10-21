@@ -59,6 +59,8 @@ describe('series-resampler', function() {
             should(p.error).be.a.Number();
             should(p.warn).not.be.ok();
         }
+        should(result[0].date.toISOString()).be.equal("2020-10-08T05:08:50.000Z");
+        should(result[10].date.toISOString()).be.equal("2020-10-21T06:24:32.000Z");
     });
 
 
