@@ -1,6 +1,6 @@
-const _ = require('the-lodash');
+import _ from 'the-lodash';
 
-module.exports.areEqual = function (a, b)
+export function areEqual(a: (Buffer | null), b : (Buffer | null)) : boolean
 {
     if (_.isNullOrUndefined(a)) {
         if (_.isNullOrUndefined(b)) {
@@ -12,7 +12,7 @@ module.exports.areEqual = function (a, b)
         if (_.isNullOrUndefined(b)) {
             return false;
         } else {
-            return a.equals(b);
+            return a!.equals(b!);
         }
     }
 }

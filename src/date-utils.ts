@@ -1,7 +1,7 @@
-const moment = require('moment');
-const _ = require('the-lodash');
+import _ from 'the-lodash';
+import moment from 'moment';
 
-module.exports.diffSeconds = function (a, b)
+export function diffSeconds(a: any, b: any) : number
 {
     var momentA = moment(a);
     var momentB = moment(b);
@@ -9,7 +9,7 @@ module.exports.diffSeconds = function (a, b)
     return duration.asSeconds();
 }
 
-module.exports.diffMilliseconds = function (a, b)
+export function diffMilliseconds(a: any, b: any) : number
 {
     var momentA = moment(a);
     var momentB = moment(b);
@@ -17,31 +17,31 @@ module.exports.diffMilliseconds = function (a, b)
     return duration.asMilliseconds();
 }
 
-module.exports.diffFromNowSeconds = function (a)
+export function diffFromNowSeconds(a: any) : number
 {
-    return module.exports.diffSeconds(new Date(), a);
+    return diffSeconds(new Date(), a);
 }
 
-module.exports.toMysqlFormat = function (date)
+export function toMysqlFormat(date: any) : string
 {
-    date = module.exports.makeDate(date);
+    date = makeDate(date);
     return date.getUTCFullYear() + "-" + 
         twoDigits(1 + date.getUTCMonth()) + "-" + 
         twoDigits(date.getUTCDate()) + " " + 
         twoDigits(date.getUTCHours()) + ":" + 
         twoDigits(date.getUTCMinutes()) + ":" + 
         twoDigits(date.getUTCSeconds());
-};
+}
 
-module.exports.makeDate = function (date)
+export function makeDate(date: any) : Date
 {
     if (_.isString(date)) {
         date = new Date(date);
     }
     return date;
-};
+}
 
-function twoDigits(d) {
+function twoDigits(d : number) : string {
     if(0 <= d && d < 10) return "0" + d.toString();
     if(-10 < d && d < 0) return "-0" + (-1*d).toString();
     return d.toString();

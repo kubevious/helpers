@@ -1,15 +1,21 @@
-const _ = require('the-lodash');
+import _ from 'the-lodash';
 
-module.exports.splitDn = function(dn)
+export interface RnInfo {
+    rn: string,
+    kind: string,
+    name: string | null
+}
+
+export function splitDn(dn : string) : string[]
 {
-    var parts = [];
+    let parts : string[] = [];
 
-    var ch = null;
-    var token = "";
-    var parsingKind = true;
-    var parsingNaming = true;
-    for (var i = 0; i < dn.length; i++) {
-        var skipAdd = false;
+    let ch = null;
+    let token = "";
+    let parsingKind = true;
+    let parsingNaming = true;
+    for (let i = 0; i < dn.length; i++) {
+        let skipAdd = false;
         ch = dn.charAt(i);
         if (parsingKind) {
             if (ch == '-') {
@@ -47,7 +53,7 @@ module.exports.splitDn = function(dn)
     return parts;
 }
 
-module.exports.parseRn = function(rn)
+export function parseRn(rn: string) : RnInfo
 {
     var index = rn.indexOf('-');
     if (index == -1) {
@@ -64,26 +70,27 @@ module.exports.parseRn = function(rn)
     };
 }
 
-module.exports.parseDn = function(dn)
+export function parseDn(dn : string) : RnInfo[]
 {
-    var parts = module.exports.splitDn(dn);
-    return parts.map(x => module.exports.parseRn(x));
+    var parts = splitDn(dn);
+    return parts.map(x => parseRn(x));
 }
 
-module.exports.parentDn = function(dn)
+export function parentDn(dn : string) : string
 {
-    var parts = module.exports.splitDn(dn);
-    return module.exports.makeDn(_.dropRight(parts));
+    var parts = splitDn(dn);
+    return makeDnFromParts(_.dropRight(parts));
 }
 
-module.exports.makeDn = function(parentDn, childRn)
+export function makeDn(parentDn: string, childRn: string) : string
 {
-    if (_.isArray(parentDn)) {
-        return parentDn.join('/');
-    }
-
     if (!parentDn) {
         return childRn;
     }
     return parentDn + "/" + childRn;
+}
+
+export function makeDnFromParts(parts: string[]) : string
+{
+    return parts.join('/');
 }
