@@ -1,4 +1,4 @@
-module.exports = {
+export const PROPERTY_GROUP_TOOLTIPS : Record<string, any> = {
     'properties': 'Top level properties associated with this object.',
 
     'config': 'Kubernetes YAML Configuration',

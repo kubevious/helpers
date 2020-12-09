@@ -1,25 +1,31 @@
-const StopWatch = require('../lib/stopwatch');
-const _ = require('the-lodash');
+import _ from 'the-lodash';
+import { ILogger } from 'the-logger' ;
+import { StopWatch } from './stopwatch';
 
-class ProcessingTracker
+export type Handler = (data: any) => any;
+
+export class ProcessingTracker
 {
-    constructor(logger)
+    private _logger : ILogger;
+    private _values : Record<string, ProcessingTaskInfo> = {};
+    private _listeners : Handler[] = [];
+    private _interval : number | null = null;
+
+    constructor(logger : ILogger)
     {
         this._logger = logger;
-        this._values = {};
-        this._listeners = [];
     }
 
-    registerListener(cb)
+    registerListener(cb : Handler)
     {
         this._listeners.push(cb);
     }
 
-    enablePeriodicDebugOutput(seconds)
+    enablePeriodicDebugOutput(seconds? : number)
     {
         this.disablePeriodicDebugOutput();
         seconds = seconds || 30;
-        this._interval = setInterval(() => {
+        this._interval = <any>setInterval(() => {
             this.debugOutput();
         }, seconds * 1000);
     }
@@ -32,12 +38,12 @@ class ProcessingTracker
         }
     }
 
-    scope(name, cb)
+    scope(name: string, cb: Handler)
     {
         return this._scope(null, name, cb);
     }
 
-    getTaskInfo(name)
+    getTaskInfo(name: string) : any | null
     {
         if (this._values[name]) {
             return this._values[name];
@@ -73,9 +79,9 @@ class ProcessingTracker
         return items;
     }
 
-    _scope(parent, name, cb)
+    private _scope(parent: string | null, name: string, cb : Handler) : Promise<any>
     {
-        var fullname;
+        var fullname : string;
         if (parent) {
             fullname = parent + '/' + name;
         } else {
@@ -89,8 +95,8 @@ class ProcessingTracker
             this._values[fullname] = currentTask;
         }
 
-        var scopeObj = {
-            scope: (childName, childCb) => {
+        let scopeObj = {
+            scope: (childName: string, childCb : Handler) => {
                 return this._scope(fullname, childName, childCb);
             }
         }
@@ -109,17 +115,30 @@ class ProcessingTracker
     }
 }
 
+export interface TaskResultInfo {
+    duration: number,
+    failed: boolean
+}
 
-class ProcessingTaskInfo
+export class ProcessingTaskInfo
 {
-    constructor(logger, name)
+    private _logger : ILogger;
+    private _data : {
+        name: string,
+        results: TaskResultInfo[]
+    };
+
+    private _currentInterval : TaskResultInfo | null = null;
+    private _stopwatch : StopWatch | null = null;
+
+    constructor(logger : ILogger, name : string)
     {
         this._logger = logger;
+        
         this._data = {
             name: name,
             results: []
         }
-        this._currentInterval = null;
     }
 
     get name() {
@@ -153,7 +172,8 @@ class ProcessingTaskInfo
     {
         this._stopwatch = new StopWatch();
         this._currentInterval = {
-
+            duration: 0,
+            failed: false
         }
     }
 
@@ -175,14 +195,16 @@ class ProcessingTaskInfo
         this._logger.info("Failed: %s, Duration: %sms", this.name, duration);
     }
 
-    _finish(isSucceeded)
+    private _finish(isSucceeded: boolean)
     {
-        const duration = this._stopwatch.stop();
+        const duration = this._stopwatch!.stop();
 
-        this._currentInterval.duration = duration;
-        this._currentInterval.failed = !isSucceeded;
+        const interval = this._currentInterval!;
 
-        this._data.results.push(this._currentInterval);
+        interval.duration = duration;
+        interval.failed = !isSucceeded;
+
+        this._data.results.push(interval);
         this._data.results = _.takeRight(this._data.results, 5);
 
         this._currentInterval = null;
@@ -208,5 +230,3 @@ class ProcessingTaskInfo
     }
     
 }
-
-module.exports = ProcessingTracker;

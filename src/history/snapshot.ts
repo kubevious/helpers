@@ -1,13 +1,15 @@
-const _ = require('the-lodash');
-const Helpers = require('./helpers');
-const DnUtils = require("../dn-utils");
+import _ from 'the-lodash';
+import { makeKey } from './helpers';
+import { parentDn as makeParentDn } from '../dn-utils';
 
-class Snapshot
+export class Snapshot
 {
-    constructor(date)
+    private _date : any;
+    private _items : Record<string, any> = {};
+
+    constructor(date: any)
     {
         this._date = date;
-        this._items = {};
     }
 
     get date() {
@@ -22,12 +24,12 @@ class Snapshot
         return _.keys(this._items);
     }
 
-    addItem(item)
+    addItem(item: any)
     {
-        this._items[Helpers.makeKey(item)] = item;
+        this._items[makeKey(item)] = item;
     }
 
-    addItems(items)
+    addItems(items: any[])
     {
         for(var item of items)
         {
@@ -35,12 +37,12 @@ class Snapshot
         }
     }
 
-    deleteItem(item)
+    deleteItem(item: any)
     {
-        this.delteById(Helpers.makeKey(item));
+        this.delteById(makeKey(item));
     }
 
-    delteById(id)
+    delteById(id: string)
     {
         delete this._items[id];
     }
@@ -55,7 +57,7 @@ class Snapshot
         return _.cloneDeep(this._items);
     }
 
-    findById(id)
+    findById(id: string)
     {
         var item = this._items[id];
         if (!item) {
@@ -64,16 +66,16 @@ class Snapshot
         return item;
     }
 
-    findItem(item)
+    findItem(item: any)
     {
-        return this.findById(Helpers.makeKey(item));
+        return this.findById(makeKey(item));
     }
 
     generateTree()
     {
-        var lookup = {};
+        var lookup : Record<string, any> = {};
 
-        let makeNode = (dn, config) => {
+        let makeNode = (dn: string, config: any) => {
             var node = _.clone(config);
             node.children = [];
             lookup[dn] = node;
@@ -84,7 +86,7 @@ class Snapshot
             makeNode(item.dn, item.config);
         }
 
-        let getNode = (dn) => {
+        let getNode = (dn: string) => {
             var node = lookup[dn];
             if (!node) {
                 node = {
@@ -96,10 +98,10 @@ class Snapshot
             return node;
         };
 
-        let markParent = (dn) => {
+        let markParent = (dn: string) => {
             var node = lookup[dn];
 
-            var parentDn = DnUtils.parentDn(dn);
+            var parentDn = makeParentDn(dn);
             if (parentDn.length > 0) {
                 var parentNode = getNode(parentDn);
                 parentNode.children.push(node);
@@ -119,11 +121,4 @@ class Snapshot
         return rootNode;
     }
 
-    _getParentDn(dn, myRn)
-    {
-        var parentDn = dn.substring(0, dn.length - myRn.length - 1);
-        return parentDn;
-    }
 }
-
-module.exports = Snapshot;

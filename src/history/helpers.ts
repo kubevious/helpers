@@ -1,6 +1,6 @@
-const _ = require('the-lodash');
+import _ from 'the-lodash';
 
-module.exports.makeKey = function(item) {
+export function makeKey(item: any) : string {
 
     if (!item.dn) {
         throw new Error("MISSING DN");

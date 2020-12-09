@@ -1,12 +1,13 @@
-const Promise = require('the-promise');
-const _ = require('the-lodash');
-const Snapshot = require('./snapshot');
+import _ from 'the-lodash';
+import { Snapshot } from './snapshot';
 
-class SnapshotReconstructor
+export class SnapshotReconstructor
 {
-    constructor(snapshotItems)
+    private _snapshot : Snapshot;
+
+    constructor(snapshotItems : any)
     {
-        this._snapshot = new Snapshot();
+        this._snapshot = new Snapshot(null);
 
         if (snapshotItems)
         {
@@ -18,7 +19,7 @@ class SnapshotReconstructor
         }
     }
     
-    applyDiffsItems(diffsItems)
+    applyDiffsItems(diffsItems : any[])
     {
         for(var diffItems of diffsItems)
         {
@@ -26,7 +27,7 @@ class SnapshotReconstructor
         }
     }
 
-    applyDiffItems(diffItems)
+    applyDiffItems(diffItems : any[])
     {
         for(var item of diffItems)
         {
@@ -42,11 +43,9 @@ class SnapshotReconstructor
         }
     }
 
-    getSnapshot()
+    getSnapshot() : Snapshot
     {
         return this._snapshot;
     }
 
 }
-
-module.exports = SnapshotReconstructor;

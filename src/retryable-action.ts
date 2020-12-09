@@ -1,13 +1,22 @@
-const Promise = require('the-promise');
-const _ = require('lodash');
+import _ from 'the-lodash';
+import { Promise } from 'the-promise';
+import { ILogger } from 'the-logger' ;
 
-class RetryableAction
+export class RetryableAction
 {
-    constructor(logger, action, options)
+    private _logger : ILogger;
+    private _action : () => any;
+    private _canRetryCb? : (reason: any) => boolean;
+
+    private _delay : number;
+    private _maxDelay : number;
+    private _delayCoeff : number;
+    private _retryCount : number;
+
+    constructor(logger: ILogger, action: () => any, options?: any)
     {
         this._logger = logger;
         this._action = action;
-        this._canRetryCb = null;
 
         options = options || {};
         this._delay = _.isNumber(options.initalDelay) ? options.initalDelay : 1000;
@@ -16,17 +25,17 @@ class RetryableAction
         this._retryCount = _.isNumber(options.retryCount) ? options.retryCount : 3;
     }
 
-    canRetry(cb)
+    canRetry(cb : (reason: any) => boolean)
     {
         this._canRetryCb = cb;
     }
 
-    run()
+    run() : Promise<any>
     {
         return this._tryRun();
     }
 
-    _tryRun()
+    private _tryRun() : Promise<any>
     {
         return this._try()
             .catch(reason => {
@@ -46,7 +55,7 @@ class RetryableAction
             });
     }
 
-    _checkIfCanRetry(reason)
+    private _checkIfCanRetry(reason: any)
     {
         if (this._canRetryCb)
         {
@@ -55,7 +64,7 @@ class RetryableAction
         return true;
     }
 
-    _try()
+    private _try()
     {
         try
         {
@@ -68,5 +77,3 @@ class RetryableAction
         }
     }
 }
-
-module.exports = RetryableAction;

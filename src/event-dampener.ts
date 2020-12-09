@@ -1,22 +1,32 @@
-const Promise = require('the-promise');
-const _ = require('lodash');
+import _ from 'the-lodash';
+import { Promise } from 'the-promise';
+import { ILogger } from 'the-logger' ;
 
-class EventDampener {
+export type Handler = () => any;
 
-    constructor(logger, options)
+export class EventDampener {
+
+    private _logger : ILogger;
+    private _options: any;
+
+    private _handlers : Handler[] = [];
+    private _isTriggered = false;
+    private _isProcessing = false;
+
+
+    constructor(logger : ILogger, options: any)
     {
         this._logger = logger;
         this._options = options || {};
         if (!this._options.dampenMs) {
             this._options.dampenMs = 5000;
         }
-        this._handlers = [];
-        this._isTriggered = false;
-        this._isProcessing = false;
     }
 
-    on(cb) {
+    on(cb : Handler) {
         this._handlers.push(cb);
+        
+        // TODO: why?
         // this._processCb(cb);
     }
 
@@ -33,7 +43,7 @@ class EventDampener {
         this._tryProcess();
     }
 
-    _tryProcess()
+    private _tryProcess()
     {
         this._runNext(() => {
             this._isTriggered = false;
@@ -54,17 +64,15 @@ class EventDampener {
         
     }
 
-    _runNext(cb)
+    private _runNext(cb : Handler)
     {
         //process.nextTick(cb)
         Promise.timeout(this._options.dampenMs)
             .then(() => cb());
     }
 
-    _processCb(cb) {
+    private _processCb(cb : Handler) {
         var res = cb();
         return Promise.resolve(res);
     }
 }
-
-module.exports = EventDampener;

@@ -1,17 +1,22 @@
-const Promise = require('the-promise');
-const _ = require('the-lodash');
-const Snapshot = require("./snapshot");
-const Partitioning = require("./partitioning");
-const SnapshotReconstructor = require("./snapshot-reconstructor");
+import _ from 'the-lodash';
+import { Promise } from 'the-promise';
+import { ILogger } from 'the-logger' ;
+import { Snapshot } from './snapshot';
+import { SnapshotReconstructor } from './snapshot-reconstructor';
+import * as Partitioning from './partitioning';
 
-class HistorySnapshotReader
+export class SnapshotReader
 {
-    constructor(logger, driver)
+    private _logger : ILogger;
+    
+    private _driver : any;
+    private _statements : Record<string, any> = {};
+
+    constructor(logger: ILogger, driver : any)
     {
         this._logger = logger.sublogger('HistorySnapshotReader');
         this._driver = driver;
 
-        this._statements = {};
         this._registerStatements();
     }
 
@@ -27,13 +32,13 @@ class HistorySnapshotReader
             .then(snapshot => {
                 this.logger.info('[reconstructRecentShapshot] db snapshot: ', snapshot);
                 if (!snapshot) {
-                    return new Snapshot();
+                    return new Snapshot(null);
                 }
                 return this._reconstructSnapshot(snapshot.part, snapshot.id);
             })
     }
 
-    querySnapshotForDate(date, configKind)
+    querySnapshotForDate(date: any, configKind: any)
     {  
         return this._findDiffForDate(date)
             .then(diffObj => {
@@ -44,7 +49,7 @@ class HistorySnapshotReader
             }) 
     }
 
-    queryDnSnapshotForDate(dn, date, configKind)
+    queryDnSnapshotForDate(dn: string, date: any, configKind: any)
     {
         return this._findDiffForDate(date)
             .then(diffObj => {
@@ -55,7 +60,7 @@ class HistorySnapshotReader
             }) 
     }
 
-    queryScopedSnapshotForDate(dn, date, configKind)
+    queryScopedSnapshotForDate(dn: string, date: any, configKind: any)
     {
         return this._findDiffForDate(date)
             .then(diffObj => {
@@ -66,7 +71,7 @@ class HistorySnapshotReader
             }) 
     }
 
-    queryTimeline(from, to)
+    queryTimeline(from: any, to: any)
     {   
         let sql = 'SELECT `date`, `changes`, `error`, `warn`';
         sql += ' FROM `timeline`';
@@ -102,7 +107,7 @@ class HistorySnapshotReader
         return this._executeSql(sql, params);
     }
 
-    querySnapshotItems(partition, snapshotId, configKindFilter, dnFilter)
+    querySnapshotItems(partition: number, snapshotId: string, configKindFilter: any, dnFilter: any)
     {
         var conditions = [];
         var params = []
@@ -144,7 +149,7 @@ class HistorySnapshotReader
         return this._executeSql(sql, params);
     }
 
-    queryDiffItems(partition, diffId, configKind, dnFilter)
+    queryDiffItems(partition: number, diffId: string, configKind: any, dnFilter: any)
     {
         var conditions = [];
         var params = []
@@ -189,21 +194,21 @@ class HistorySnapshotReader
 
     /*** INTERNALS ***/
 
-    _registerStatements()
+    private _registerStatements()
     {
         this._registerStatement('GET_RECENT_SNAPSHOT', 'SELECT * FROM `snapshots` ORDER BY `date` DESC LIMIT 1;');
         
         this._registerStatement('FIND_DIFF_FOR_DATE', 'SELECT * FROM `diffs` WHERE `date` <= ? ORDER BY `date` DESC LIMIT 1;');
     }
 
-    _registerStatement(name, sql)
+    private _registerStatement(name: string, sql: string)
     {
         this._statements[name] = this._driver.statement(sql);
     }
 
-    _reconstructSnapshot(partition, snapshotId, date, configKind, dnFilter)
+    private _reconstructSnapshot(partition: number, snapshotId: string, date?: any, configKind?: string, dnFilter?: any) : Promise<any>
     {
-        var snapshotReconstructor = null;
+        let snapshotReconstructor : SnapshotReconstructor;
         return Promise.resolve()
             .then(() => this.querySnapshotItems(partition, snapshotId, configKind, dnFilter))
             .then(snapshotItems => {
@@ -221,26 +226,26 @@ class HistorySnapshotReader
     }
 
 
-    _queryDiffsItems(diffs, configKind, dnFilter)
+    private _queryDiffsItems(diffs: any[], configKind: any, dnFilter: any) : Promise<any>
     {
         return Promise.serial(diffs, diff => {
             return this.queryDiffItems(diff.part, diff.id, configKind, dnFilter);
         });
     }
 
-    _findDiffForDate(date)
+    private _findDiffForDate(date: any) : Promise<any>
     {
         return this._execute('FIND_DIFF_FOR_DATE', [date])
             .then(results => {
                 if (results.length == 0) {
                     return null;
                 }
-                var diff = _.head(results);
+                let diff : any = _.head(results);
                 return diff;
             })
     }
 
-    _queryDiffsForSnapshotAndDate(partition, snapshotId, date)
+    private _queryDiffsForSnapshotAndDate(partition: number, snapshotId: string, date: any) : Promise<any>
     {
         let sql = 'SELECT *';
         sql += ' FROM `diffs`';
@@ -271,7 +276,7 @@ class HistorySnapshotReader
         return this._executeSql(sql, params);
     }
 
-    _queryRecentSnapshot()
+    private _queryRecentSnapshot() : Promise<any>
     {
         return this._execute('GET_RECENT_SNAPSHOT')
             .then(results => {
@@ -281,7 +286,7 @@ class HistorySnapshotReader
 
     /**  **/
 
-    _massageConfigKind(configKind)
+    private _massageConfigKind(configKind : any) : any
     {
         if (configKind)
         {
@@ -304,7 +309,7 @@ class HistorySnapshotReader
         return configKind;
     }
 
-    _applyDnFilter(dnFilter, conditions, params)
+    private _applyDnFilter(dnFilter: any, conditions: any, params: any)
     {
         if (dnFilter)
         {
@@ -324,17 +329,15 @@ class HistorySnapshotReader
         }
     }
 
-    _execute(statementId, params)
+    private _execute(statementId: string, params?: any) : Promise<any>
     {
         var statement = this._statements[statementId];
         return statement.execute(params);
     }
 
-    _executeSql(sql, params)
+    private _executeSql(sql: string, params?: any) : Promise<any>
     {
         return this._driver.executeSql(sql, params);
     }
 
 }
-
-module.exports = HistorySnapshotReader;

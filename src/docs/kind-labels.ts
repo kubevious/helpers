@@ -1,4 +1,4 @@
-module.exports = {
+export const KIND_TO_USER_MAPPING : Record<string, string> = {
     'ns': 'Namespace',
     'app': 'Application',
     'cont': 'Container',

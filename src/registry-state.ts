@@ -1,23 +1,27 @@
-const _ = require('the-lodash');
-const DnUtils = require('./dn-utils');
-const HashUtils = require('./hash-utils');
+import _ from 'the-lodash';
+import * as DnUtils from './dn-utils';
+import * as HashUtils from './hash-utils';
 
 const ROOT_NAME = 'root';
 
-class RegistryState
+export class RegistryState
 {
-    constructor(snapshotInfo)
+    private _date : any;
+
+    private _tree : any;
+    private _nodeMap : Record<string, any> = {};
+    private _childrenMap : Record<string, any> = {};
+    private _propertiesMap : Record<string, any> = {};
+    private _alertsMap : Record<string, any> = {};
+    private _hierarchyAlertsMap : Record<string, any> = {};
+    private _kindMap : Record<string, any> = {};
+
+    private _isBundled : boolean = false;
+    private _isFinalized : boolean = false;
+
+    constructor(snapshotInfo: any)
     {
         this._date = snapshotInfo.date;
-
-        this._tree = null;
-        this._nodeMap = {};
-        this._childrenMap = {};
-        this._propertiesMap = {};
-        this._alertsMap = {};
-        this._hierarchyAlertsMap = {};
-
-        this._kindMap = {};
 
         this._transform(snapshotInfo);
 
@@ -29,7 +33,7 @@ class RegistryState
         return this._date;
     }
 
-    getCount()
+    getCount() : number
     {
         return _.keys(this._nodeMap).length;
     }
@@ -51,14 +55,14 @@ class RegistryState
         return this._tree;
     }
 
-    getNode(dn, includeChildren)
+    getNode(dn: string, includeChildren?: boolean) : NodeInfo | null
     {
         var node = this._constructNode(dn);
         if (!node) {
             return null;
         }
 
-        var result = {
+        var result : NodeInfo = {
             node: node
         }
 
@@ -70,13 +74,13 @@ class RegistryState
         return result;
     }
 
-    getChildren(dn)
+    getChildren(dn: string)
     {
         var result = this._getChildren(dn);
         return result;
     }
 
-    getProperties(dn)
+    getProperties(dn: string)
     {
         var props = this._getProperties(dn);
         if (!props) {
@@ -85,7 +89,7 @@ class RegistryState
         return props;
     }
 
-    getAlerts(dn)
+    getAlerts(dn: string)
     {
         var alerts = this._getAlerts(dn);
         if (!alerts) {
@@ -94,7 +98,7 @@ class RegistryState
         return alerts;
     }
 
-    getHierarchyAlerts(dn)
+    getHierarchyAlerts(dn: string)
     {
         this._ensureFinalized();
 
@@ -118,12 +122,12 @@ class RegistryState
         return _.keys(this._nodeMap);
     }
 
-    editableNode(dn)
+    editableNode(dn: string)
     {
         return this._nodeMap[dn];
     }
 
-    findByKind(kind)
+    findByKind(kind: string)
     {
         var res = this._kindMap[kind];
         if (!res) {
@@ -132,10 +136,10 @@ class RegistryState
         return res;
     }
 
-    scopeByKind(descendentDn, kind)
+    scopeByKind(descendentDn: string, kind: string) : Record<string, any>
     {
         var result = this.findByKind(kind);
-        var newResult = {};
+        var newResult : Record<string, any> = {};
         for(var key of _.keys(result))
         {
             if (_.startsWith(key, descendentDn))
@@ -146,9 +150,9 @@ class RegistryState
         return newResult;
     }
 
-    childrenByKind(parentDn, kind)
+    childrenByKind(parentDn: string, kind: string) : Record<string, any>
     {
-        var newResult = {};
+        var newResult : Record<string, any> = {};
         var childDns = this._childrenMap[parentDn];
         if (childDns) {
             for(var childDn of childDns) {
@@ -164,7 +168,7 @@ class RegistryState
         return newResult;
     }
 
-    getChildrenDns(dn)
+    getChildrenDns(dn: string)
     {
         var childDns = this._childrenMap[dn];
         if (childDns) {
@@ -173,7 +177,7 @@ class RegistryState
         return [];
     }
 
-    _getChildren(dn)
+    private _getChildren(dn: string)
     {
         var result = [];
 
@@ -188,7 +192,7 @@ class RegistryState
         return result;
     }
 
-    _constructNode(dn)
+    private _constructNode(dn: string)
     {
         var node = this._nodeMap[dn];
         if (!node) {
@@ -201,7 +205,7 @@ class RegistryState
         return node;
     }
 
-    _transform(snapshotInfo)
+    private _transform(snapshotInfo: any)
     {
         for(var item of _.values(snapshotInfo.items))
         {
@@ -223,7 +227,7 @@ class RegistryState
         this._buildChildrenMap();
     }
 
-    _addTreeNode(dn, node)
+    private _addTreeNode(dn: string, node: any)
     {
         this._nodeMap[dn] = node;
 
@@ -234,7 +238,7 @@ class RegistryState
         this._kindMap[node.kind][dn] = node;
     }
 
-    _buildChildrenMap()
+    private _buildChildrenMap()
     {
         for(var dn of _.keys(this._nodeMap))
         {
@@ -250,7 +254,7 @@ class RegistryState
         }
     }
 
-    _buildTreeNode(parentDn)
+    private _buildTreeNode(parentDn: string)
     {
         var node = this._nodeMap[parentDn];
         if (!node) {
@@ -273,19 +277,19 @@ class RegistryState
         return node;
     }
 
-    _getProperties(dn)
+    private _getProperties(dn: string)
     {
         var props = this._propertiesMap[dn];
         return props;
     }
 
-    _getAlerts(dn)
+    private _getAlerts(dn: string)
     {
         var alerts = this._alertsMap[dn];
         return alerts;
     }
 
-    _fetchProperties(dn)
+    private _fetchProperties(dn: string)
     {
         var props = this._propertiesMap[dn];
         if (!props) {
@@ -295,7 +299,7 @@ class RegistryState
         return props;
     }
 
-    _fetchAlerts(dn)
+    private _fetchAlerts(dn: string)
     {
         var alerts = this._alertsMap[dn];
         if (!alerts) {
@@ -305,13 +309,13 @@ class RegistryState
         return alerts;
     }
 
-    raiseAlert(dn, alertInfo)
+    raiseAlert(dn: string, alertInfo: any)
     {
         var alerts = this._fetchAlerts(dn);
         alerts.push(alertInfo);
     }
 
-    raiseMarker(dn, name)
+    raiseMarker(dn: string, name: string)
     {
         var node = this._nodeMap[dn];
         if (!node) {
@@ -324,7 +328,7 @@ class RegistryState
         node.markers[name] = true;
     }
 
-    _ensureFinalized()
+    private _ensureFinalized()
     {
         if (!this._isFinalized) {
             throw new Error("State Not Finalized");
@@ -378,14 +382,14 @@ class RegistryState
 
     }
 
-    buildBundle()
+    buildBundle() : StateBundle
     {
         if (this._isBundled) {
             throw new Error("Is already bundled");
         }
         this._isBundled = true;
 
-        var bundle = {
+        let bundle : StateBundle = {
             nodes: [],
             children: [],
             properties: [],
@@ -425,7 +429,7 @@ class RegistryState
         return bundle;
     }
 
-    _massageNode(node)
+    private _massageNode(node: any)
     {
         if (node.markers && _.isPlainObject(node.markers))
         {
@@ -433,23 +437,27 @@ class RegistryState
         }
     }
 
-    _buildBundleItem(dn, config)
+    private _buildBundleItem(dn : string, config: any) : BundleItem
     {
-        var item = {
+        let key = {
             dn: dn,
             config: config
         }
-        item.config_hash = HashUtils.calculateObjectHashStr(config);
+        let item : BundleItem = {
+            dn: dn,
+            config: config,
+            config_hash: HashUtils.calculateObjectHashStr(key)
+        }
         return item;
     }
 
-    traverseTreeBottomsUp(cb)
+    traverseTreeBottomsUp(cb : (dn: string, node: any, parentDn: string | null, parentNode: any) => void)
     {
-        var traverseNode = (dn, parentDn, parentNode) =>
+        var traverseNode = (dn: string, parentDn: string | null, parentNode: any | null) =>
         {
             var node = this._nodeMap[dn];
             if (!node) {
-                return null;
+                return;
             }
         
             var childrenDns = this.getChildrenDns(dn);
@@ -464,7 +472,7 @@ class RegistryState
         traverseNode(ROOT_NAME, null, null);
     }
 
-    traverseNodes(cb)
+    traverseNodes(cb: (dn: string, node: any, parentDn?: string, parentNode?: any) => void)
     {
         for(var dn of _.keys(this._nodeMap))
         {
@@ -475,7 +483,25 @@ class RegistryState
             }
         }
     }
-    
 }
 
-module.exports = RegistryState;
+export interface BundleItem
+{
+    dn: string;
+    config: any;
+    config_hash : string;
+}
+
+export interface StateBundle
+{
+    nodes: BundleItem[];
+    children: BundleItem[];
+    properties: BundleItem[];
+    alerts: BundleItem[];
+}
+
+export interface NodeInfo
+{
+    node: any;
+    children?: any[]
+}

@@ -1,20 +1,24 @@
-const _ = require('the-lodash');
+import _ from 'the-lodash';
 
-class SeriesResampler
+export type Reducer = (points: any[]) => number;
+
+export class SeriesResampler
 {
-    constructor(resolution)
+    private _resolution : number;
+    private _metadata : Record<string, Reducer> = {};
+
+    constructor(resolution : number)
     {
         this._resolution = resolution;
-        this._metadata = {};
     }
 
-    column(name, reducer)
+    column(name: string, reducer: Reducer)
     {
         this._metadata[name] = reducer;
         return this;
     }
 
-    process(data)
+    process(data: any[])
     {
         if (data.length <= 2) {
             return data;
@@ -34,7 +38,11 @@ class SeriesResampler
             return data;
         }
     
-        let buckets = [];
+        let buckets : {
+            time: any,
+            points: any[]
+        }[] = [];
+
         for(let i = 0; i < this._resolution; i++)
         {
             let bucket = {
@@ -55,11 +63,11 @@ class SeriesResampler
         }
     
         let resampled = [];
-        let lastPoint = null;
+        let lastPoint : (Record<string, any> | null) = null;
         for(let i = 0; i < buckets.length; i++)
         {
             let bucket = buckets[i];
-            let point = {
+            let point : Record<string, any> = {
                 date: new Date(bucket.time)
             }
     
@@ -93,7 +101,7 @@ class SeriesResampler
         return resampled;
     }
 
-    _getBucketId(date, minTime, bucketWidth)
+    private _getBucketId(date: Date, minTime: any, bucketWidth: number)
     {
         let timeDiff = date.getTime() - minTime;
         let id = Math.floor(timeDiff / bucketWidth);
@@ -103,5 +111,3 @@ class SeriesResampler
         return id;
     }
 }
-
-module.exports = SeriesResampler;

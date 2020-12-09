@@ -1,13 +1,16 @@
-const moment = require('moment');
+import moment from 'moment';
 
-class StopWatch
+export class StopWatch
 {
+    private _startMoment : moment.Moment;
+    private _durationMs : number = 0;
+
     constructor()
     {
         this._startMoment = moment(new Date());
     }
 
-    get durationMs() {
+    get durationMs() : number {
         return this._durationMs;
     }
 
@@ -18,5 +21,3 @@ class StopWatch
         return this._durationMs;
     }
 }
-
-module.exports = StopWatch;
