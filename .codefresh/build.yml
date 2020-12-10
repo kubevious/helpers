@@ -43,7 +43,6 @@ steps:
     image: 'kubevious/node-builder:12'
     working_directory: "${{CICD_REPO_PATH}}"
     commands:
-      - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > ~/.npmrc
       - npm ci
 
   compile:
