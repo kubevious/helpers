@@ -1,8 +1,14 @@
-const should = require('should');
-const _ = require('the-lodash');
-const Promise = require('the-promise');
-const logger = require('the-logger').setup('test', { pretty: true });
-const EventDampener = require('../').EventDampener;
+import 'mocha';
+import should = require('should');
+
+import _ from 'the-lodash';
+import { Promise } from 'the-promise';
+import { setupLogger, LoggerOptions } from 'the-logger';
+
+const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
+const logger = setupLogger('test', loggerOptions);
+
+import { EventDampener } from '../src/event-dampener';
 
 describe('event-dampener', function() {
 

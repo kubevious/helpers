@@ -1,7 +1,16 @@
-const should = require('should');
-const FileUtils = require('./utils/file-utils');
-const _ = require('the-lodash');
-const RegistryState = require('../lib/registry-state');
+import 'mocha';
+import should = require('should');
+
+import _ from 'the-lodash';
+import { Promise } from 'the-promise';
+import { setupLogger, LoggerOptions } from 'the-logger';
+
+const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
+const logger = setupLogger('test', loggerOptions);
+
+import { RegistryState } from '../src/registry-state';
+
+import * as FileUtils from './utils/file-utils';
 
 describe('registry-state', function() {
 
@@ -10,7 +19,7 @@ describe('registry-state', function() {
         var state = new RegistryState(snapshotInfo);
 
         var nsNode = state.getNode('root/ns-[kube-public]');
-        (nsNode).should.be.an.Object();
+        should(nsNode).be.an.Object();
     });
 
     it('parse-large-test', function() {
@@ -20,17 +29,17 @@ describe('registry-state', function() {
 
         var dn = 'root/ns-[kubevious]/app-[kubevious-ui]/launcher-[Deployment]';
         var deploymentNode = state.getNode(dn);
-        (deploymentNode).should.be.an.Object();
+        should(deploymentNode).be.an.Object();
 
         var props = state.getProperties(dn);
         (props).should.be.an.Object();
-        (props['config']).should.be.an.Object();
+        should(props['config']).be.an.Object();
 
         var alerts = state.getAlerts(dn);
-        (alerts).should.be.an.Array;
+        should(alerts).be.an.Array;
 
         var hierarchyAlerts = state.getHierarchyAlerts(dn);
-        (hierarchyAlerts).should.be.an.Array;
+        should(hierarchyAlerts).be.an.Array;
 
     })
 
@@ -39,8 +48,8 @@ describe('registry-state', function() {
         var state = new RegistryState(snapshotInfo);
 
         var result = state.findByKind('launcher');
-        (result).should.be.an.Object();
-        (_.keys(result).length).should.be.equal(77);
+        should(result).be.an.Object();
+        should(_.keys(result).length).be.equal(77);
 
         for(var item of _.values(result))
         {
@@ -54,8 +63,8 @@ describe('registry-state', function() {
         var state = new RegistryState(snapshotInfo);
 
         var result = state.scopeByKind('root/ns-[kubevious]', 'launcher');
-        (result).should.be.an.Object();
-        (_.keys(result).length).should.be.equal(4);
+        should(result).be.an.Object();
+        should(_.keys(result).length).be.equal(4);
 
         for(var item of _.values(result))
         {
@@ -132,26 +141,28 @@ describe('registry-state', function() {
         {
             var myDn = 'root/ns-[kube-system]';
             var myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
-            (myItemAlerts).should.be.an.Object();
+            should(myItemAlerts).be.an.Object();
 
             var myNode = state.getNode(myDn);
+            should(myNode).be.ok();
 
-            should(myNode.node.selfAlertCount).be.eql({});
-            should(myNode.node.alertCount).be.eql({ error: 11, warn: 11 });
+            should(myNode!.node.selfAlertCount).be.eql({});
+            should(myNode!.node.alertCount).be.eql({ error: 11, warn: 11 });
 
-            should(myItemAlerts.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]']).be.not.ok();
-            should(myItemAlerts.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]/configmap-[istio.v1]']).be.ok();
+            should(myItemAlerts!.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]']).be.not.ok();
+            should(myItemAlerts!.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]/configmap-[istio.v1]']).be.ok();
         }
 
         {
             var myDn = 'root/ns-[kube-system]/app-[fluentd-gcp-scaler]';
             var myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
-            (myItemAlerts).should.be.an.Object();
+            should(myItemAlerts).be.an.Object();
 
             var myNode = state.getNode(myDn);
+            should(myNode).be.ok();
 
-            should(myNode.node.selfAlertCount).be.eql({ error: 1});
-            should(myNode.node.alertCount).be.eql({ error: 1 });
+            should(myNode!.node.selfAlertCount).be.eql({ error: 1});
+            should(myNode!.node.alertCount).be.eql({ error: 1 });
         }
     })
 

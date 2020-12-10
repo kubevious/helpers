@@ -1,9 +1,14 @@
-const should = require('should');
-const _ = require('the-lodash');
-const Promise = require('the-promise');
-const ProcessingTracker = require('../lib/processing-tracker');
+import 'mocha';
+import should = require('should');
 
-const logger = require('the-logger').setup('test', { pretty: true }).sublogger('Tracker');
+import _ from 'the-lodash';
+import { Promise } from 'the-promise';
+import { setupLogger, LoggerOptions } from 'the-logger';
+
+const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
+const logger = setupLogger('test', loggerOptions);
+
+import { ProcessingTracker } from '../src/processing-tracker';
 
 describe('processing-tracker', function() {
 
@@ -62,7 +67,7 @@ describe('processing-tracker', function() {
                 .then(() => { throw new Error("FAILED!!!") })
         })
         .then(() => {
-            should.fail("SHOULD HAVE BEEN FAILED")
+            should.fail("SHOULD HAVE BEEN FAILED", "")
         })
         .catch(reason => {
             {
@@ -100,7 +105,7 @@ describe('processing-tracker', function() {
     it('test-5', function() {
         var processingTracker = new ProcessingTracker(logger);
 
-        let myExtractedData = null;
+        let myExtractedData : any;
 
         processingTracker.registerListener(extractedData => {
             myExtractedData = extractedData;
@@ -123,7 +128,7 @@ describe('processing-tracker', function() {
             processingTracker.debugOutput();
         })
         .then(() => {
-            logger.info('EXTRACTED DATA', myExtractedData);
+            // logger.info('EXTRACTED DATA', myExtractedData);
             should(myExtractedData).be.an.Array();
         })
     });
@@ -141,7 +146,7 @@ describe('processing-tracker', function() {
         })
         .then(() => {
             const data = processingTracker.extract();
-            logger.info('EXTRACTED DATA', data);
+            // logger.info('EXTRACTED DATA', data);
             should(data).be.an.Array();
             for(var x of data)
             {

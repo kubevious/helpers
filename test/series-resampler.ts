@@ -1,9 +1,9 @@
-const should = require('should');
-const _ = require('the-lodash');
-const Promise = require('the-promise');
-const SeriesResampler = require('../lib/history/series-resampler');
+import 'mocha';
+import should = require('should');
 
-const logger = require('the-logger').setup('test', { pretty: true }).sublogger('Tracker');
+import _ from 'the-lodash';
+
+import { SeriesResampler } from '../src/history/series-resampler';
 
 describe('series-resampler', function() {
 
@@ -40,13 +40,10 @@ describe('series-resampler', function() {
             ;
 
         let importData =  [
-            {"date":"2020-10-07 22:08:50", "changes":7, "error":42, "warn":368},
-            {"date":"2020-10-14 12:07:23", "changes":6, "error":54, "warn":370},
-            {"date":"2020-10-20 23:24:32", "changes":7, "error":54, "warn":367},
+            {"date":new Date("2020-10-07 22:08:50"), "changes":7, "error":42, "warn":368},
+            {"date":new Date("2020-10-14 12:07:23"), "changes":6, "error":54, "warn":370},
+            {"date":new Date("2020-10-20 23:24:32"), "changes":7, "error":54, "warn":367},
         ];
-        for(let x of importData) {
-            x.date = new Date(x.date);
-        }
         let result = resampler.process(importData);
         should(result).be.an.Array();
         should(result.length).be.equal(11);

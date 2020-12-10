@@ -1,8 +1,14 @@
-const should = require('should');
-const _ = require('the-lodash');
-const Promise = require('the-promise');
-const logger = require('the-logger').setup('test', { pretty: true });
-const RetryableAction = require('../').RetryableAction;
+import 'mocha';
+import should = require('should');
+
+import _ from 'the-lodash';
+import { Promise } from 'the-promise';
+import { setupLogger, LoggerOptions } from 'the-logger';
+
+const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
+const logger = setupLogger('test', loggerOptions);
+
+import { RetryableAction } from '../src/retryable-action';
 
 describe('retryable-action', function() {
 
@@ -26,7 +32,7 @@ describe('retryable-action', function() {
         
         return action.run()
             .then(result => {
-                should(result).be.equal(444);
+                should(result!).be.equal(444);
             })
     });
 

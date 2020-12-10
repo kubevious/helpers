@@ -1,7 +1,7 @@
-const path = require('path');
-const fs = require('fs');
+import * as path from 'path';
+import * as fs from 'fs';
 
-module.exports.readJsonData = function(name)
+export function readJsonData(name: string) : object
 {
     const filePath = path.resolve(__dirname, '..', 'data', name);
     var contents = fs.readFileSync(filePath).toString();
