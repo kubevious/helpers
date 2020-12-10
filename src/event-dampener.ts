@@ -14,7 +14,7 @@ export class EventDampener {
     private _isProcessing = false;
 
 
-    constructor(logger : ILogger, options: any)
+    constructor(logger : ILogger, options?: any)
     {
         this._logger = logger;
         this._options = options || {};
