@@ -5,6 +5,8 @@ export class HandledError extends Error {
   constructor (message: string, canRetry? : boolean) {
     super(message)
 
+    Object.setPrototypeOf(this, HandledError.prototype);
+
     this.name = this.constructor.name
     if(canRetry) {
       this._canRetry = true;
