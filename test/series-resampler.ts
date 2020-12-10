@@ -40,9 +40,9 @@ describe('series-resampler', function() {
             ;
 
         let importData =  [
-            {"date":new Date("2020-10-07 22:08:50"), "changes":7, "error":42, "warn":368},
-            {"date":new Date("2020-10-14 12:07:23"), "changes":6, "error":54, "warn":370},
-            {"date":new Date("2020-10-20 23:24:32"), "changes":7, "error":54, "warn":367},
+            {"date":new Date("2020-10-08T05:08:50.000Z"), "changes":7, "error":42, "warn":368},
+            {"date":new Date("2020-10-14T14:09:51.000Z"), "changes":6, "error":54, "warn":370},
+            {"date":new Date("2020-10-21T06:24:32.000Z"), "changes":7, "error":54, "warn":367},
         ];
         let result = resampler.process(importData);
         should(result).be.an.Array();
