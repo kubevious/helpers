@@ -1,5 +1,6 @@
 import _ from 'the-lodash';
 import { ILogger } from 'the-logger' ;
+import { Promise, Resolvable } from 'the-promise';
 import { StopWatch } from './stopwatch';
 
 export type Handler = (data: any) => any;
@@ -38,9 +39,10 @@ export class ProcessingTracker
         }
     }
 
-    scope(name: string, cb: Handler)
+    scope<T>(name: string, cb: (innerScope: ProcessingTrackerScope) => (T | Resolvable<T>))
     {
-        return this._scope(null, name, cb);
+        const x = new ProcessingTrackerScope(this._logger, this._values, null);
+        return x.scope(name, cb);
     }
 
     getTaskInfo(name: string) : any | null
@@ -79,40 +81,7 @@ export class ProcessingTracker
         return items;
     }
 
-    private _scope(parent: string | null, name: string, cb : Handler) : Promise<any>
-    {
-        var fullname : string;
-        if (parent) {
-            fullname = parent + '/' + name;
-        } else {
-            fullname = name;
-        }
-        this._logger.info("Start: %s", fullname);
-
-        let currentTask = this._values[fullname];
-        if (!currentTask) {
-            currentTask = new ProcessingTaskInfo(this._logger, fullname);
-            this._values[fullname] = currentTask;
-        }
-
-        let scopeObj = {
-            scope: (childName: string, childCb : Handler) => {
-                return this._scope(fullname, childName, childCb);
-            }
-        }
-
-        currentTask.start();
-        return Promise.resolve()
-            .then(() => cb(scopeObj))
-            .then(result => {
-                currentTask.finishSuccess();
-                return result;
-            })
-            .catch(reason => {
-                currentTask.finishFail();
-                throw reason;
-            });
-    }
+   
 }
 
 export interface TaskResultInfo {
@@ -229,4 +198,50 @@ export class ProcessingTaskInfo
         }
     }
     
+}
+
+
+export class ProcessingTrackerScope
+{
+    private _logger : ILogger;
+    private _values : Record<string, ProcessingTaskInfo> = {};
+    private _parent: string | null;
+
+    constructor(logger: ILogger, values : Record<string, ProcessingTaskInfo>, parent: string | null)
+    {
+        this._logger = logger;
+        this._values = values;
+        this._parent = parent;
+    }
+
+    scope<T>(name: string, cb : (innerScope: ProcessingTrackerScope) => (T | Resolvable<T>)) : Promise<T>
+    {
+        var fullname : string;
+        if (parent) {
+            fullname = parent + '/' + name;
+        } else {
+            fullname = name;
+        }
+        this._logger.info("Start: %s", fullname);
+
+        let currentTask = this._values[fullname];
+        if (!currentTask) {
+            currentTask = new ProcessingTaskInfo(this._logger, fullname);
+            this._values[fullname] = currentTask;
+        }
+
+        const childScopeObj = new ProcessingTrackerScope(this._logger, this._values, fullname);
+
+        currentTask.start();
+        return Promise.resolve()
+            .then(() => cb(childScopeObj))
+            .then(result => {
+                currentTask.finishSuccess();
+                return result;
+            })
+            .catch(reason => {
+                currentTask.finishFail();
+                throw reason;
+            });
+    }
 }
