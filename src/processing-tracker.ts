@@ -217,8 +217,8 @@ export class ProcessingTrackerScope
     scope<T>(name: string, cb : (innerScope: ProcessingTrackerScope) => (T | Resolvable<T>)) : Promise<T>
     {
         var fullname : string;
-        if (parent) {
-            fullname = parent + '/' + name;
+        if (this._parent) {
+            fullname = this._parent + '/' + name;
         } else {
             fullname = name;
         }
