@@ -5,7 +5,12 @@ import { StopWatch } from './stopwatch';
 
 export type Handler = (data: any) => any;
 
-export class ProcessingTracker
+export interface ProcessingTrackerScoper
+{
+    scope<T>(name: string, cb : (innerScope: ProcessingTrackerScoper) => (T | Resolvable<T>)) : Promise<T>;
+}
+
+export class ProcessingTracker implements ProcessingTrackerScoper
 {
     private _logger : ILogger;
     private _values : Record<string, ProcessingTaskInfo> = {};
@@ -39,7 +44,7 @@ export class ProcessingTracker
         }
     }
 
-    scope<T>(name: string, cb: (innerScope: ProcessingTrackerScope) => (T | Resolvable<T>))
+    scope<T>(name: string, cb: (innerScope: ProcessingTrackerScoper) => (T | Resolvable<T>))
     {
         const x = new ProcessingTrackerScope(this._logger, this._values, null);
         return x.scope(name, cb);
@@ -197,11 +202,9 @@ export class ProcessingTaskInfo
             this._logger.info("* Task: %s. %s", this.name, this.durationInfo);
         }
     }
-    
 }
 
-
-export class ProcessingTrackerScope
+class ProcessingTrackerScope implements ProcessingTrackerScoper
 {
     private _logger : ILogger;
     private _values : Record<string, ProcessingTaskInfo> = {};
@@ -214,7 +217,7 @@ export class ProcessingTrackerScope
         this._parent = parent;
     }
 
-    scope<T>(name: string, cb : (innerScope: ProcessingTrackerScope) => (T | Resolvable<T>)) : Promise<T>
+    scope<T>(name: string, cb : (innerScope: ProcessingTrackerScoper) => (T | Resolvable<T>)) : Promise<T>
     {
         var fullname : string;
         if (this._parent) {
