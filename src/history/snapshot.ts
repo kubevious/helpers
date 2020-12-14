@@ -24,6 +24,11 @@ export class Snapshot
         return _.keys(this._items);
     }
 
+    addItemByKey(key: string, item: any)
+    {
+        this._items[key] = item;
+    }
+
     addItem(item: any)
     {
         this._items[makeKey(item)] = item;
