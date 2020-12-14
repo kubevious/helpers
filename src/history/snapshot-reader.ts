@@ -26,7 +26,7 @@ export class SnapshotReader
 
     /*** PUBLIC ***/
 
-    reconstructRecentShapshot()
+    reconstructRecentShapshot() : Promise<Snapshot>
     {
         return this._queryRecentSnapshot()
             .then(snapshot => {
@@ -38,7 +38,7 @@ export class SnapshotReader
             })
     }
 
-    querySnapshotForDate(date: any, configKind: any)
+    querySnapshotForDate(date: any, configKind: any) : Promise<Snapshot | null>
     {  
         return this._findDiffForDate(date)
             .then(diffObj => {
@@ -49,7 +49,7 @@ export class SnapshotReader
             }) 
     }
 
-    queryDnSnapshotForDate(dn: string, date: any, configKind: any)
+    queryDnSnapshotForDate(dn: string, date: any, configKind: any) : Promise<Snapshot | null>
     {
         return this._findDiffForDate(date)
             .then(diffObj => {
@@ -60,7 +60,7 @@ export class SnapshotReader
             }) 
     }
 
-    queryScopedSnapshotForDate(dn: string, date: any, configKind: any)
+    queryScopedSnapshotForDate(dn: string, date: any, configKind: any) : Promise<Snapshot | null>
     {
         return this._findDiffForDate(date)
             .then(diffObj => {
@@ -104,7 +104,12 @@ export class SnapshotReader
             sql += filters.join(' AND ');
         }
 
-        return this._executeSql(sql, params);
+        return this._executeSql<{
+            date: any, 
+            changes: any, 
+            error: any, 
+            warn: any
+        }[]>(sql, params);
     }
 
     querySnapshotItems(partition: number, snapshotId: string, configKindFilter: any, dnFilter: any)
@@ -146,7 +151,14 @@ export class SnapshotReader
                 + conditions.join(' AND ');
         }
 
-        return this._executeSql(sql, params);
+        return this._executeSql<{
+            id: any, 
+            dn: any, 
+            kind: any, 
+            config_kind: any, 
+            name: any, 
+            config: any
+        }[]>(sql, params);
     }
 
     queryDiffItems(partition: number, diffId: string, configKind: any, dnFilter: any)
@@ -189,7 +201,15 @@ export class SnapshotReader
                 + conditions.join(' AND ');
         }
 
-        return this._executeSql(sql, params);
+        return this._executeSql<{
+            id: any, 
+            dn: any, 
+            kind: any, 
+            config_kind: any, 
+            name: any, 
+            present: any, 
+            config: any
+        }[]>(sql, params);
     }
 
     /*** INTERNALS ***/
@@ -206,7 +226,7 @@ export class SnapshotReader
         this._statements[name] = this._driver.statement(sql);
     }
 
-    private _reconstructSnapshot(partition: number, snapshotId: string, date?: any, configKind?: string, dnFilter?: any) : Promise<any>
+    private _reconstructSnapshot(partition: number, snapshotId: string, date?: any, configKind?: string, dnFilter?: any) : Promise<Snapshot>
     {
         let snapshotReconstructor : SnapshotReconstructor;
         return Promise.resolve()
@@ -335,7 +355,7 @@ export class SnapshotReader
         return statement.execute(params);
     }
 
-    private _executeSql(sql: string, params?: any) : Promise<any>
+    private _executeSql<T>(sql: string, params?: any) : Promise<T>
     {
         return this._driver.executeSql(sql, params);
     }
