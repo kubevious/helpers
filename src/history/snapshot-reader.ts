@@ -4,6 +4,7 @@ import { ILogger } from 'the-logger' ;
 import { Snapshot } from './snapshot';
 import { SnapshotReconstructor } from './snapshot-reconstructor';
 import * as Partitioning from './partitioning';
+import { SnapshotItem, DiffItem, TimelineSample } from './entities'
 
 export class SnapshotReader
 {
@@ -104,12 +105,7 @@ export class SnapshotReader
             sql += filters.join(' AND ');
         }
 
-        return this._executeSql<{
-            date: any, 
-            changes: any, 
-            error: any, 
-            warn: any
-        }[]>(sql, params);
+        return this._executeSql<TimelineSample[]>(sql, params);
     }
 
     querySnapshotItems(partition: number, snapshotId: string, configKindFilter?: any, dnFilter?: any)
@@ -151,14 +147,7 @@ export class SnapshotReader
                 + conditions.join(' AND ');
         }
 
-        return this._executeSql<{
-            id: any, 
-            dn: any, 
-            kind: any, 
-            config_kind: any, 
-            name: any, 
-            config: any
-        }[]>(sql, params);
+        return this._executeSql<SnapshotItem[]>(sql, params);
     }
 
     queryDiffItems(partition: number, diffId: string, configKind?: any, dnFilter?: any)
@@ -201,15 +190,7 @@ export class SnapshotReader
                 + conditions.join(' AND ');
         }
 
-        return this._executeSql<{
-            id: any, 
-            dn: any, 
-            kind: any, 
-            config_kind: any, 
-            name: any, 
-            present: any, 
-            config: any
-        }[]>(sql, params);
+        return this._executeSql<DiffItem[]>(sql, params);
     }
 
     /*** INTERNALS ***/
