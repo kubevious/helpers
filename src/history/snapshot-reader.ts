@@ -38,7 +38,7 @@ export class SnapshotReader
             })
     }
 
-    querySnapshotForDate(date: any, configKind: any) : Promise<Snapshot | null>
+    querySnapshotForDate(date: any, configKind?: any) : Promise<Snapshot | null>
     {  
         return this._findDiffForDate(date)
             .then(diffObj => {
@@ -49,7 +49,7 @@ export class SnapshotReader
             }) 
     }
 
-    queryDnSnapshotForDate(dn: string, date: any, configKind: any) : Promise<Snapshot | null>
+    queryDnSnapshotForDate(dn: string, date: any, configKind?: any) : Promise<Snapshot | null>
     {
         return this._findDiffForDate(date)
             .then(diffObj => {
@@ -60,7 +60,7 @@ export class SnapshotReader
             }) 
     }
 
-    queryScopedSnapshotForDate(dn: string, date: any, configKind: any) : Promise<Snapshot | null>
+    queryScopedSnapshotForDate(dn: string, date: any, configKind?: any) : Promise<Snapshot | null>
     {
         return this._findDiffForDate(date)
             .then(diffObj => {
@@ -112,10 +112,10 @@ export class SnapshotReader
         }[]>(sql, params);
     }
 
-    querySnapshotItems(partition: number, snapshotId: string, configKindFilter: any, dnFilter: any)
+    querySnapshotItems(partition: number, snapshotId: string, configKindFilter?: any, dnFilter?: any)
     {
         var conditions = [];
-        var params = []
+        var params : any[] = []
 
         conditions.push('`snapshot_id` = ?')
         params.push(snapshotId);
@@ -161,10 +161,10 @@ export class SnapshotReader
         }[]>(sql, params);
     }
 
-    queryDiffItems(partition: number, diffId: string, configKind: any, dnFilter: any)
+    queryDiffItems(partition: number, diffId: string, configKind?: any, dnFilter?: any)
     {
         var conditions = [];
-        var params = []
+        var params : any[] = []
 
         conditions.push('`diff_id` = ?')
         params.push(diffId)
@@ -246,7 +246,7 @@ export class SnapshotReader
     }
 
 
-    private _queryDiffsItems(diffs: any[], configKind: any, dnFilter: any) : Promise<any>
+    private _queryDiffsItems(diffs: any[], configKind?: any, dnFilter?: any) : Promise<any>
     {
         return Promise.serial(diffs, diff => {
             return this.queryDiffItems(diff.part, diff.id, configKind, dnFilter);
@@ -329,7 +329,7 @@ export class SnapshotReader
         return configKind;
     }
 
-    private _applyDnFilter(dnFilter: any, conditions: any, params: any)
+    private _applyDnFilter(dnFilter: any, conditions: any, params: any[])
     {
         if (dnFilter)
         {
