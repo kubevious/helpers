@@ -39,7 +39,7 @@ export interface Alert
     id: string,
     severity: string,
     msg: string,
-    source: any
+    source?: any
 }
 
 export type ItemProperties = Record<string, any>;
@@ -256,6 +256,14 @@ export class RegistryState
         }
 
         node.raiseMarker(name);
+    }
+
+    postProcessAlerts(cb: (dn: string, alerts: Alert[]) => void)
+    {
+        for(let dn of _.keys(this._alertsMap))
+        {
+            cb(dn, this._alertsMap[dn]);
+        }
     }
 
     buildBundle() : RegistryBundleState
