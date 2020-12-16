@@ -167,8 +167,11 @@ describe('registry-state', function() {
 
 function loadRegistryState(filePath: string) : RegistryState
 {
-    const data = FileUtils.readJsonData(filePath);
-    const snapshotInfo = <SnapshotInfo> data;
+    const data = <any>FileUtils.readJsonData(filePath);
+    const snapshotInfo = <SnapshotInfo> {
+        date: data.date,
+        items: _.values(data.items)
+    };
     const state = new RegistryState(snapshotInfo);
     return state;
 }

@@ -149,7 +149,7 @@ export class RegistryState
 
     private _transform(snapshotInfo: SnapshotInfo)
     {
-        for(var item of _.values(snapshotInfo.items))
+        for(var item of snapshotInfo.items)
         {
             switch (item.config_kind)
             {

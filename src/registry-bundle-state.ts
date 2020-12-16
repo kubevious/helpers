@@ -28,6 +28,11 @@ export class RegistryBundleState
         this._buildBundle();
     }
 
+    get date()
+    {
+        return this._registryState.date;
+    }
+
     get nodes() : BundleItem[] {
         return this._nodes;
     }
@@ -50,6 +55,11 @@ export class RegistryBundleState
 
     get nodeItems() {
         return _.values(this._nodeMap);
+    }
+
+    getCount() : number
+    {
+        return _.keys(this._nodeMap).length;
     }
 
     getNodeItem(dn: string): RegistryBundleNode | null
