@@ -17,10 +17,10 @@
   "author": "Ruben Hakopian <ruben.hakopian@gmail.com>",
   "license": "Propriatery",
   "dependencies": {
+    "moment": "^2.29.1",
     "the-lodash": "^2.0.0",
-    "the-logger": "^2.0.2",
-    "the-promise": "^2.0.3",
-    "moment": "^2.29.1"
+    "the-logger": "^2.0.5",
+    "the-promise": "^2.0.3"
   },
   "devDependencies": {
     "@types/mocha": "^8.0.3",

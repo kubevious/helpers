@@ -8,44 +8,46 @@ import { setupLogger, LoggerOptions } from 'the-logger';
 const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
 const logger = setupLogger('test', loggerOptions);
 
-import { RegistryState } from '../src/registry-state';
+import { RegistryState, SnapshotInfo } from '../src/registry-state';
 
 import * as FileUtils from './utils/file-utils';
 
 describe('registry-state', function() {
 
     it('parse-small-test', function() {
-        var snapshotInfo = FileUtils.readJsonData('snapshot-items-small.json');
-        var state = new RegistryState(snapshotInfo);
+        const state = loadRegistryState('snapshot-items-small.json');
 
-        var nsNode = state.getNode('root/ns-[kube-public]');
+        const nsNode = state.getNode('root/ns-[kube-public]');
         should(nsNode).be.an.Object();
+        should(nsNode!.kind).be.a.String().and.equal("ns");
+        // should(nsNode.).be.an.Object();
     });
 
     it('parse-large-test', function() {
-        var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
-        var state = new RegistryState(snapshotInfo);
-        state.finalizeState();
+        const state = loadRegistryState('snapshot-items-large.json');
 
-        var dn = 'root/ns-[kubevious]/app-[kubevious-ui]/launcher-[Deployment]';
-        var deploymentNode = state.getNode(dn);
+        const dn = 'root/ns-[kubevious]/app-[kubevious-ui]/launcher-[Deployment]';
+        const stateNode = state.getNode(dn);
+        should(stateNode).be.an.Object();
+
+        const bundle = state.buildBundle();
+
+        const deploymentNode = bundle.getNodeItem(dn);
         should(deploymentNode).be.an.Object();
 
-        var props = state.getProperties(dn);
+        const props = state.getProperties(dn);
         (props).should.be.an.Object();
         should(props['config']).be.an.Object();
 
-        var alerts = state.getAlerts(dn);
+        const alerts = state.getAlerts(dn);
         should(alerts).be.an.Array;
-
-        var hierarchyAlerts = state.getHierarchyAlerts(dn);
+        
+        const hierarchyAlerts = deploymentNode!.hierarchyAlerts
         should(hierarchyAlerts).be.an.Array;
-
     })
 
     it('findByKind', function() {
-        var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
-        var state = new RegistryState(snapshotInfo);
+        var state = loadRegistryState('snapshot-items-large.json');
 
         var result = state.findByKind('launcher');
         should(result).be.an.Object();
@@ -59,8 +61,7 @@ describe('registry-state', function() {
     })
 
     it('scopeByKind', function() {
-        var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
-        var state = new RegistryState(snapshotInfo);
+        var state = loadRegistryState('snapshot-items-large.json');
 
         var result = state.scopeByKind('root/ns-[kubevious]', 'launcher');
         should(result).be.an.Object();
@@ -73,33 +74,29 @@ describe('registry-state', function() {
         }
     });
 
-    it('childrenByKind', function() {
-        var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
-        var state = new RegistryState(snapshotInfo);
+    // it('childrenByKind', function() {
+    //     var state = loadRegistryState('snapshot-items-large.json');
 
-        var result = state.childrenByKind('root/ns-[kubevious]/app-[kubevious-ui]', 'service');
-        (result).should.be.an.Object();
-        (_.keys(result).length).should.be.equal(1);
+    //     var result = state.childrenByKind('root/ns-[kubevious]/app-[kubevious-ui]', 'service');
+    //     (result).should.be.an.Object();
+    //     (_.keys(result).length).should.be.equal(1);
 
-        var item = result['root/ns-[kubevious]/app-[kubevious-ui]/service-[NodePort]'];
-        (item).should.be.an.Object();
-        (item.rn).should.be.equal('service-[NodePort]');
-    });
+    //     var item = result['root/ns-[kubevious]/app-[kubevious-ui]/service-[NodePort]'];
+    //     (item).should.be.an.Object();
+    //     (item.rn).should.be.equal('service-[NodePort]');
+    // });
 
-    it('build-tree', function() {
-        var snapshotInfo = FileUtils.readJsonData('snapshot-items-large.json');
-        var state = new RegistryState(snapshotInfo);
+    // it('build-tree', function() {
+    //     var state = loadRegistryState('snapshot-items-large.json');
 
-        var tree = state.getTree();
-        (tree).should.be.an.Object();
-    })
+    //     var tree = state.getTree();
+    //     (tree).should.be.an.Object();
+    // })
 
     it('build-bundle', function() {
-        var snapshotInfo = FileUtils.readJsonData('snapshot-items-small.json');
-        var state = new RegistryState(snapshotInfo);
-        state.finalizeState();
+        const state = loadRegistryState('snapshot-items-small.json');
 
-        var bundle = state.buildBundle();
+        const bundle = state.buildBundle();
         (bundle).should.be.an.Object();
         (bundle.nodes).should.be.an.Array();
         (bundle.children).should.be.an.Array();
@@ -139,31 +136,39 @@ describe('registry-state', function() {
         }
 
         {
-            var myDn = 'root/ns-[kube-system]';
-            var myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
+            const myDn = 'root/ns-[kube-system]';
+            const myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
             should(myItemAlerts).be.an.Object();
 
-            var myNode = state.getNode(myDn);
+            const myNode = bundle.getNodeItem(myDn);
             should(myNode).be.ok();
 
-            should(myNode!.node.selfAlertCount).be.eql({});
-            should(myNode!.node.alertCount).be.eql({ error: 11, warn: 11 });
+            should(myNode!.selfAlertCount).be.eql({ error: 0, warn: 0 });
+            should(myNode!.alertCount).be.eql({ error: 11, warn: 11 });
 
             should(myItemAlerts!.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]']).be.not.ok();
             should(myItemAlerts!.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]/configmap-[istio.v1]']).be.ok();
         }
 
         {
-            var myDn = 'root/ns-[kube-system]/app-[fluentd-gcp-scaler]';
-            var myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
+            const myDn = 'root/ns-[kube-system]/app-[fluentd-gcp-scaler]';
+            const myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
             should(myItemAlerts).be.an.Object();
 
-            var myNode = state.getNode(myDn);
+            const myNode = bundle.getNodeItem(myDn);
             should(myNode).be.ok();
 
-            should(myNode!.node.selfAlertCount).be.eql({ error: 1});
-            should(myNode!.node.alertCount).be.eql({ error: 1 });
+            should(myNode!.selfAlertCount).be.eql({ error: 1, warn: 0});
+            should(myNode!.alertCount).be.eql({ error: 1, warn: 0 });
         }
     })
 
 });
+
+function loadRegistryState(filePath: string) : RegistryState
+{
+    const data = FileUtils.readJsonData(filePath);
+    const snapshotInfo = <SnapshotInfo> data;
+    const state = new RegistryState(snapshotInfo);
+    return state;
+}
