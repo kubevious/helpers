@@ -33,6 +33,8 @@ export interface SnapshotPropsConfig
 {
     kind: string;
     id: string;
+    title: string;
+    config: any;
 }
 
 export type SnapshotAlertsConfig = Alert[];
