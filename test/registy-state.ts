@@ -74,17 +74,17 @@ describe('registry-state', function() {
         }
     });
 
-    // it('childrenByKind', function() {
-    //     var state = loadRegistryState('snapshot-items-large.json');
+    it('childrenByKind', function() {
+        var state = loadRegistryState('snapshot-items-large.json');
 
-    //     var result = state.childrenByKind('root/ns-[kubevious]/app-[kubevious-ui]', 'service');
-    //     (result).should.be.an.Object();
-    //     (_.keys(result).length).should.be.equal(1);
+        var result = state.childrenByKind('root/ns-[kubevious]/app-[kubevious-ui]', 'service');
+        (result).should.be.an.Object();
+        (_.keys(result).length).should.be.equal(1);
 
-    //     var item = result['root/ns-[kubevious]/app-[kubevious-ui]/service-[NodePort]'];
-    //     (item).should.be.an.Object();
-    //     (item.rn).should.be.equal('service-[NodePort]');
-    // });
+        var item = result['root/ns-[kubevious]/app-[kubevious-ui]/service-[NodePort]'];
+        (item).should.be.an.Object();
+        (item.rn).should.be.equal('service-[NodePort]');
+    });
 
     // it('build-tree', function() {
     //     var state = loadRegistryState('snapshot-items-large.json');

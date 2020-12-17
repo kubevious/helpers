@@ -27,6 +27,14 @@ export class RegistryStateNode
         return this.config.kind;
     }
 
+    get rn() {
+        return this.config.rn;
+    }
+
+    get name() {
+        return this.config.name;
+    }
+
     get config(): SnapshotNodeConfig {
         return this._config;
     }

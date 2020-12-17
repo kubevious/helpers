@@ -14,7 +14,7 @@ export interface SnapshotItemInfo
 {
     dn: string;
     config_kind: string;
-    config: any;
+    config: SnapshotNodeConfig | SnapshotPropsConfig | SnapshotAlertsConfig;
 }
 
 export interface AlertCounter {
@@ -25,7 +25,18 @@ export interface AlertCounter {
 export interface SnapshotNodeConfig
 {
     kind: string;
+    rn: string;
+    name?: string;
 }
+
+export interface SnapshotPropsConfig
+{
+    kind: string;
+    id: string;
+}
+
+export type SnapshotAlertsConfig = Alert[];
+
 
 export enum SnapshotConfigKind
 {
@@ -42,7 +53,7 @@ export interface Alert
     source?: any
 }
 
-export type ItemProperties = Record<string, any>;
+export type ItemProperties = Record<string, SnapshotPropsConfig>;
 
 export class RegistryState
 {
@@ -73,9 +84,9 @@ export class RegistryState
         return _.keys(this._nodeMap).length;
     }
 
-    getProperties(dn: string)
+    getProperties(dn: string) : ItemProperties
     {
-        var props = this._getProperties(dn);
+        let props = this._getProperties(dn);
         if (!props) {
             props = {};
         }
@@ -110,11 +121,6 @@ export class RegistryState
         return node;
     }
 
-    // editableNode(dn: string)
-    // {
-    //     return this._nodeMap[dn];
-    // }
-
     findByKind(kind: string) : Record<string, RegistryStateNode>
     {
         var res = this._kindMap[kind];
@@ -122,6 +128,24 @@ export class RegistryState
             return {}
         }
         return res;
+    }
+
+    childrenByKind(parentDn: string, kind: string) : Record<string, RegistryStateNode>
+    {
+        let newResult : Record<string, any> = {};
+        let childDns = this._childrenMap[parentDn];
+        if (childDns) {
+            for(var childDn of childDns) {
+                const childNode = this.getNode(childDn);
+                if (childNode) {
+                    if (childNode.kind == kind)
+                    {
+                        newResult[childDn] = childNode;
+                    }
+                }
+            }
+        }
+        return newResult;
     }
 
     scopeByKind(descendentDn: string, kind: string) : Record<string, RegistryStateNode>
@@ -154,19 +178,28 @@ export class RegistryState
             switch (item.config_kind)
             {
                 case SnapshotConfigKind.node:
-                    this._addTreeNode(item.dn, item.config);
+                    {
+                        const config = <SnapshotNodeConfig>item.config;
+                        this._addTreeNode(item.dn, config);
+                    }
                     break;
 
                 case SnapshotConfigKind.props:
-                    var props = this._fetchProperties(item.dn);
-                    props[item.config.id] = item.config;
+                    {
+                        const config = <SnapshotPropsConfig>item.config;
+                        var props = this._fetchProperties(item.dn);
+                        props[config.id] = config;
+                    }
                     break;
 
                 case SnapshotConfigKind.alerts:
-                    var alerts = this._fetchAlerts(item.dn);
-                    for(var x of item.config)
                     {
-                        alerts.push(x);
+                        const config = <SnapshotAlertsConfig>item.config;
+                        var alerts = this._fetchAlerts(item.dn);
+                        for(var x of config)
+                        {
+                            alerts.push(x);
+                        }
                     }
                     break;
             }
