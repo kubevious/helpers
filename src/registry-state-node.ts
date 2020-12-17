@@ -52,6 +52,10 @@ export class RegistryStateNode
         return _.keys(this._markers);
     }
 
+    get markersDict()  {
+        return this._markers;
+    }
+
     get propertiesMap() {
         return this._propertiesMap;
     }

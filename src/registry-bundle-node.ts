@@ -10,17 +10,25 @@ export class RegistryBundleNode
     private _alertCount: AlertCounter = { error: 0, warn: 0 };
     private _hierarchyAlerts : Record<string, Alert[]> = {};
 
-    constructor(bundle : RegistryBundleState, node: RegistryStateNode)
+    private _markers: Record<string, boolean>;
+    private _labels : Record<string, string>;
+    private _annotations : Record<string, string>;
+
+    constructor(bundle: RegistryBundleState, node: RegistryStateNode)
     {
         this._bundle = bundle;
         this._node = node;
+
+        this._markers = node.markersDict;
+        this._labels = node.getProperties('labels');
+        this._annotations = node.getProperties('annotations');
     }
 
-    get kind() {
+    get kind() : string {
         return this._node.kind;
     }
 
-    get dn() {
+    get dn() : string {
         return this._node.dn;
     }
 
@@ -32,23 +40,35 @@ export class RegistryBundleNode
         return this._node;
     }
 
-    get selfAlerts() {
+    get selfAlerts() : Alert[] {
         return this._node.selfAlerts;
     }
 
-    get selfAlertCount() {
+    get selfAlertCount() : AlertCounter {
         return this._selfAlertCount;
     }
 
-    get alertCount() {
+    get alertCount() : AlertCounter {
         return this._alertCount;
     }
 
-    get propertiesMap() {
+    get propertiesMap() : Record<string, any> {
         return this.registryNode.propertiesMap;
     }
 
-    get hierarchyAlerts() {
+    get hierarchyAlerts() : Record<string, Alert[]> {
         return this._hierarchyAlerts
+    }
+
+    get labels() : Record<string, string> {
+        return this._labels;
+    }
+
+    get annotations() : Record<string, string> {
+        return this._annotations;
+    }
+
+    get markers() : Record<string, boolean> {
+        return this._markers;
     }
 }

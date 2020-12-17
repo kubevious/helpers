@@ -254,7 +254,6 @@ export interface BundleItem
     config_hash : string;
 }
 
-
 export interface BundledNodeConfig extends SnapshotNodeConfig
 {
     childrenCount: number;
