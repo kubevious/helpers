@@ -20,8 +20,8 @@ export class RegistryBundleNode
         this._node = node;
 
         this._markers = node.markersDict;
-        this._labels = node.getProperties('labels');
-        this._annotations = node.getProperties('annotations');
+        this._labels = node.getPropertiesConfig('labels');
+        this._annotations = node.getPropertiesConfig('annotations');
     }
 
     get kind() : string {

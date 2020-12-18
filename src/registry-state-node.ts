@@ -1,5 +1,5 @@
 import _ from 'the-lodash';
-import { Alert, AlertCounter, ItemProperties, RegistryState, SnapshotNodeConfig } from './registry-state';
+import { Alert, AlertCounter, ItemProperties, RegistryState, SnapshotNodeConfig, SnapshotPropsConfig } from './registry-state';
 
 export class RegistryStateNode
 {
@@ -68,13 +68,22 @@ export class RegistryStateNode
         return this._propertiesMap;
     }
 
-    getProperties(name: string) : any
+    getProperties(name: string) : SnapshotPropsConfig | null
+    {
+        const props = this._propertiesMap[name];
+        if (!props) {
+            return null;
+        }
+        return props;
+    }
+
+    getPropertiesConfig(name: string) : any
     {
         const props = this._propertiesMap[name];
         if (!props) {
             return {};
         }
-        return props;
+        return props.config || {};
     }
 
     raiseMarker(name: string)
