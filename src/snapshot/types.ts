@@ -24,6 +24,7 @@ export interface SnapshotPropsConfig
     kind: string;
     id: string;
     title: string;
+    order?: number;
     config: any;
 }
 
