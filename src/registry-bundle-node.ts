@@ -1,6 +1,7 @@
 import { RegistryBundleState } from "./registry-bundle-state";
-import { Alert, AlertCounter, SnapshotNodeConfig } from "./registry-state";
 import { RegistryStateNode } from "./registry-state-node";
+
+import { SnapshotNodeConfig, AlertCounter, Alert } from './snapshot/types';
 
 export class RegistryBundleNode
 {

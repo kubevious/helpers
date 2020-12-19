@@ -226,7 +226,6 @@ export class SnapshotReader
             ;
     }
 
-
     private _queryDiffsItems(diffs: any[], configKind?: any, dnFilter?: any) : Promise<any>
     {
         return Promise.serial(diffs, diff => {

@@ -4,56 +4,7 @@ import * as DnUtils from './dn-utils';
 import { RegistryStateNode } from './registry-state-node';
 import { RegistryBundleState } from './registry-bundle-state';
 
-export interface SnapshotInfo
-{
-    date: any;
-    items: SnapshotItemInfo[];
-}
-
-export interface SnapshotItemInfo
-{
-    dn: string;
-    config_kind: string;
-    config: SnapshotNodeConfig | SnapshotPropsConfig | SnapshotAlertsConfig;
-}
-
-export interface AlertCounter {
-    error: number,
-    warn: number
-}
-
-export interface SnapshotNodeConfig
-{
-    kind: string;
-    rn: string;
-    name?: string;
-}
-
-export interface SnapshotPropsConfig
-{
-    kind: string;
-    id: string;
-    title: string;
-    config: any;
-}
-
-export type SnapshotAlertsConfig = Alert[];
-
-
-export enum SnapshotConfigKind
-{
-    node = 'node',
-    props = 'props',
-    alerts = 'alerts'
-} 
-
-export interface Alert
-{
-    id: string,
-    severity: string,
-    msg: string,
-    source?: any
-}
+import { Alert, SnapshotAlertsConfig, SnapshotConfigKind, SnapshotInfo, SnapshotNodeConfig, SnapshotPropsConfig  } from './snapshot/types';
 
 export type ItemProperties = Record<string, SnapshotPropsConfig>;
 

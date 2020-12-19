@@ -1,7 +1,8 @@
 import _ from 'the-lodash';
 
 import { RegistryBundleNode } from './registry-bundle-node';
-import { Alert, AlertCounter, RegistryState, SnapshotNodeConfig } from './registry-state';
+import { RegistryState } from './registry-state';
+import { AlertCounter, SnapshotNodeConfig } from './snapshot/types';
 
 import * as HashUtils from './hash-utils';
 

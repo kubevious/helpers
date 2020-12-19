@@ -1,5 +1,6 @@
 import _ from 'the-lodash';
-import { Alert, AlertCounter, ItemProperties, RegistryState, SnapshotNodeConfig, SnapshotPropsConfig } from './registry-state';
+import { ItemProperties, RegistryState } from './registry-state';
+import { Alert, SnapshotNodeConfig, SnapshotPropsConfig  } from './snapshot/types';
 
 export class RegistryStateNode
 {
