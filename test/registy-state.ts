@@ -8,7 +8,8 @@ import { setupLogger, LoggerOptions } from 'the-logger';
 const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
 const logger = setupLogger('test', loggerOptions);
 
-import { RegistryState, SnapshotInfo } from '../src/registry-state';
+import { RegistryState } from '../src/registry-state';
+import { SnapshotInfo } from '../src/snapshot/types';
 
 import * as FileUtils from './utils/file-utils';
 
