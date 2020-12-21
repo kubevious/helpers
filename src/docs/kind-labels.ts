@@ -18,4 +18,7 @@ export const KIND_TO_USER_MAPPING : Record<string, string> = {
     'psp': 'Pod Security Policy',
     'netpols': 'Network Policies',
     'netpol': 'Network Policy',
+    'node': 'Node',
+    'service': 'Service',
+    'pod': 'Pod'
 }
