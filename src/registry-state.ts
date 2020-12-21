@@ -83,6 +83,11 @@ export class RegistryState
         return res;
     }
 
+    countByKind(kind: string) : number
+    {
+        return _.keys(this.findByKind(kind)).length;
+    }
+
     childrenByKind(parentDn: string, kind: string) : Record<string, RegistryStateNode>
     {
         let newResult : Record<string, any> = {};
