@@ -4,7 +4,7 @@ import * as DnUtils from './dn-utils';
 import { RegistryStateNode } from './registry-state-node';
 import { RegistryBundleState } from './registry-bundle-state';
 
-import { Alert, SnapshotAlertsConfig, SnapshotConfigKind, SnapshotInfo, SnapshotNodeConfig, SnapshotPropsConfig  } from './snapshot/types';
+import { Alert, SnapshotAlertsConfig, SnapshotConfigKind, SnapshotInfo, SnapshotItemInfo, SnapshotNodeConfig, SnapshotPropsConfig  } from './snapshot/types';
 
 export type ItemProperties = Record<string, SnapshotPropsConfig>;
 
@@ -124,41 +124,44 @@ export class RegistryState
         return [];
     }
 
+    addNewItem(item: SnapshotItemInfo)
+    {
+        switch (item.config_kind)
+        {
+            case SnapshotConfigKind.node:
+                {
+                    const config = <SnapshotNodeConfig>item.config;
+                    this._addTreeNode(item.dn, config);
+                }
+                break;
+
+            case SnapshotConfigKind.props:
+                {
+                    const config = <SnapshotPropsConfig>item.config;
+                    var props = this._fetchProperties(item.dn);
+                    props[config.id] = config;
+                }
+                break;
+
+            case SnapshotConfigKind.alerts:
+                {
+                    const config = <SnapshotAlertsConfig>item.config;
+                    var alerts = this._fetchAlerts(item.dn);
+                    for(var x of config)
+                    {
+                        alerts.push(x);
+                    }
+                }
+                break;
+        }
+    }
+
     private _transform(snapshotInfo: SnapshotInfo)
     {
         for(var item of snapshotInfo.items)
         {
-            switch (item.config_kind)
-            {
-                case SnapshotConfigKind.node:
-                    {
-                        const config = <SnapshotNodeConfig>item.config;
-                        this._addTreeNode(item.dn, config);
-                    }
-                    break;
-
-                case SnapshotConfigKind.props:
-                    {
-                        const config = <SnapshotPropsConfig>item.config;
-                        var props = this._fetchProperties(item.dn);
-                        props[config.id] = config;
-                    }
-                    break;
-
-                case SnapshotConfigKind.alerts:
-                    {
-                        const config = <SnapshotAlertsConfig>item.config;
-                        var alerts = this._fetchAlerts(item.dn);
-                        for(var x of config)
-                        {
-                            alerts.push(x);
-                        }
-                    }
-                    break;
-            }
+            this.addNewItem(item);
         }
-
-        this._buildChildrenMap();
     }
 
     private _addTreeNode(dn: string, nodeConfig: SnapshotNodeConfig)
@@ -178,13 +181,13 @@ export class RegistryState
             this._kindMap[nodeConfig.kind] = {};
         }
         this._kindMap[nodeConfig.kind][dn] = node;
+
+        this._registerChild(dn);
     }
 
-    private _buildChildrenMap()
+    private _registerChild(dn: string)
     {
-        for(var dn of _.keys(this._nodeMap))
-        {
-            var parentDn = DnUtils.parentDn(dn);
+        var parentDn = DnUtils.parentDn(dn);
             if (parentDn) {
                 var parent = this._childrenMap[parentDn];
                 if (!parent) {
@@ -193,7 +196,6 @@ export class RegistryState
                 }
                 parent.push(dn);
             }
-        }
     }
 
     private _getProperties(dn: string)
