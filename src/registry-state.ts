@@ -83,6 +83,15 @@ export class RegistryState
         return res;
     }
 
+    findByDn(dn: string) : RegistryStateNode | null
+    {
+        var res = this._nodeMap[dn];
+        if (!res) {
+            return null;
+        }
+        return res;
+    }
+
     countByKind(kind: string) : number
     {
         return _.keys(this.findByKind(kind)).length;

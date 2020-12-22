@@ -45,11 +45,11 @@ export class RegistryStateNode
         return childDns.length;
     }
 
-    get labels(): any {
+    get labels(): SnapshotPropsConfig {
         return this._propertiesMap['labels'] || {};
     }
 
-    get annotations(): any {
+    get annotations(): SnapshotPropsConfig {
         return this._propertiesMap['annotations'] || {};
     }
 
