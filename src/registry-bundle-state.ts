@@ -182,8 +182,8 @@ export class RegistryBundleState
             }
 
             {
-                const alerts = node.hierarchyAlerts;
-                if (alerts && _.keys(alerts).length > 0)
+                const alerts = node.selfAlerts;
+                if (alerts && alerts.length > 0)
                 {
                     this._alerts.push(
                         this._buildBundleItem(dn, alerts)

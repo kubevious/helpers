@@ -138,8 +138,6 @@ describe('registry-state', function() {
 
         {
             const myDn = 'root/ns-[kube-system]';
-            const myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
-            should(myItemAlerts).be.an.Object();
 
             const myNode = bundle.getNodeItem(myDn);
             should(myNode).be.ok();
@@ -147,20 +145,26 @@ describe('registry-state', function() {
             should(myNode!.selfAlertCount).be.eql({ error: 0, warn: 0 });
             should(myNode!.alertCount).be.eql({ error: 11, warn: 11 });
 
-            should(myItemAlerts!.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]']).be.not.ok();
-            should(myItemAlerts!.config['root/ns-[kube-system]/raw-[Raw Configs]/raw-[ConfigMaps]/configmap-[istio.v1]']).be.ok();
+            const myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
+            should(myItemAlerts).not.be.ok();
         }
 
         {
             const myDn = 'root/ns-[kube-system]/app-[fluentd-gcp-scaler]';
-            const myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
-            should(myItemAlerts).be.an.Object();
 
             const myNode = bundle.getNodeItem(myDn);
             should(myNode).be.ok();
 
             should(myNode!.selfAlertCount).be.eql({ error: 1, warn: 0});
             should(myNode!.alertCount).be.eql({ error: 1, warn: 0 });
+
+            const myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
+            should(myItemAlerts).be.an.Object();
+            should(myItemAlerts!.config).be.an.Array();
+            should(myItemAlerts!.config.length).be.equal(1);
+
+            should(myItemAlerts!.config[0].severity).be.equal("error");
+            should(myItemAlerts!.config[0].msg).be.equal("Service account fluentd-gcp-scaler is not found.");
         }
     })
 
