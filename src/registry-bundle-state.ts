@@ -113,6 +113,7 @@ export class RegistryBundleState
             let nodeConfig : BundledNodeConfig = {
                 ...node.registryNode.config,
                 markers: node.registryNode.markers,
+                selfAlertCount: node.selfAlertCount,
                 alertCount: node.alertCount,
                 childrenCount: childDns.length
             };
@@ -259,5 +260,6 @@ export interface BundledNodeConfig extends SnapshotNodeConfig
 {
     childrenCount: number;
     markers: string[];
+    selfAlertCount: AlertCounter;
     alertCount: AlertCounter;
 }
