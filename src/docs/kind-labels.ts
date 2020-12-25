@@ -20,5 +20,7 @@ export const KIND_TO_USER_MAPPING : Record<string, string> = {
     'netpol': 'Network Policy',
     'node': 'Node',
     'service': 'Service',
-    'pod': 'Pod'
+    'pod': 'Pod',
+    'ingress': 'Ingress',
+    'launcher': 'Launcher'
 }
