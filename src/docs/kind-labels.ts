@@ -22,5 +22,7 @@ export const KIND_TO_USER_MAPPING : Record<string, string> = {
     'service': 'Service',
     'pod': 'Pod',
     'ingress': 'Ingress',
-    'launcher': 'Launcher'
+    'launcher': 'Launcher',
+    'storclass': 'Storage Class',
+    'storage': 'Storage',
 }
