@@ -4,8 +4,6 @@ import { RegistryBundleNode } from './registry-bundle-node';
 import { RegistryState } from './registry-state';
 import { AlertCounter, SnapshotNodeConfig } from './snapshot/types';
 
-import * as HashUtils from './hash-utils';
-
 const ROOT_NAME = 'root';
 
 export class RegistryBundleState
@@ -15,39 +13,17 @@ export class RegistryBundleState
 
     private _nodeConfigs : Record<string, BundledNodeConfig> = {}
 
-    private _nodes: BundleItem[] = [];
-    private _children: BundleItem[] = [];
-    private _properties: BundleItem[] = [];
-    private _alerts: BundleItem[] = [];
-
     constructor(registryState: RegistryState)
     {
         this._registryState = registryState;
        
         this._buildNodes();
         this._finalize();
-        this._buildBundle();
     }
 
     get date()
     {
         return this._registryState.date;
-    }
-
-    get nodes() : BundleItem[] {
-        return this._nodes;
-    }
-
-    get children() : BundleItem[] {
-        return this._children;
-    }
-
-    get properties() : BundleItem[] {
-        return this._properties;
-    }
-
-    get alerts() : BundleItem[] {
-        return this._alerts;
     }
 
     get registryState() : RegistryState {
@@ -152,61 +128,6 @@ export class RegistryBundleState
         });
     }
 
-    private _buildBundle()
-    {
-        for(let node of _.values(this._nodeMap))
-        {
-            const dn = node.dn;
-
-            {
-                let nodeConfig = this._nodeConfigs[node.dn];
-                this._nodes.push(
-                    this._buildBundleItem(dn, nodeConfig)
-                );
-            }
-
-            {
-                this._children.push(
-                    this._buildBundleItem(dn, this._registryState.getChildrenDns(dn))
-                );
-            }
-
-            {
-                const propertiesMap = node.propertiesMap;
-                if (propertiesMap && _.keys(propertiesMap).length > 0)
-                {
-                    this._properties.push(
-                        this._buildBundleItem(dn, propertiesMap)
-                    );
-                }
-            }
-
-            {
-                const alerts = node.selfAlerts;
-                if (alerts && alerts.length > 0)
-                {
-                    this._alerts.push(
-                        this._buildBundleItem(dn, alerts)
-                    );
-                }
-            }
-        }
-    }
-
-    private _buildBundleItem(dn : string, config: any) : BundleItem
-    {
-        let key = {
-            dn: dn,
-            config: config
-        }
-        let item : BundleItem = {
-            dn: dn,
-            config: config,
-            config_hash: HashUtils.calculateObjectHashStr(key)
-        }
-        return item;
-    }
-
     private _traverseTreeBottomsUp(cb : (dn: string, node: RegistryBundleNode, parentDn: string | null, parentNode: RegistryBundleNode | null) => void)
     {
         var traverseNode = (dn: string, parentDn: string | null, parentNode: RegistryBundleNode | null) =>
@@ -239,21 +160,6 @@ export class RegistryBundleState
             }
         }
     }
-}
-
-export interface StateBundleData
-{
-    nodes: BundleItem[];
-    children: BundleItem[];
-    properties: BundleItem[];
-    alerts: BundleItem[];
-}
-
-export interface BundleItem
-{
-    dn: string;
-    config: any;
-    config_hash : string;
 }
 
 export interface BundledNodeConfig extends SnapshotNodeConfig

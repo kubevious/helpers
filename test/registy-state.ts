@@ -99,41 +99,12 @@ describe('registry-state', function() {
 
         const bundle = state.buildBundle();
         (bundle).should.be.an.Object();
-        (bundle.nodes).should.be.an.Array();
-        (bundle.children).should.be.an.Array();
-        (bundle.properties).should.be.an.Array();
-        (bundle.alerts).should.be.an.Array();
 
-        for(var item of bundle.nodes)
+        for(var item of bundle.nodeItems)
         {
             (item).should.be.an.Object();
             (item.dn).should.be.a.String();
             (item.config).should.be.an.Object();
-            (item.config_hash).should.be.a.String();
-        }
-
-        for(var item of bundle.children)
-        {
-            (item).should.be.an.Object();
-            (item.dn).should.be.a.String();
-            (item.config).should.be.an.Array();
-            (item.config_hash).should.be.a.String();
-        }
-
-        for(var item of bundle.properties)
-        {
-            (item).should.be.an.Object();
-            (item.dn).should.be.a.String();
-            (item.config).should.be.an.Object();
-            (item.config_hash).should.be.a.String();
-        }
-
-        for(var item of bundle.alerts)
-        {
-            (item).should.be.an.Object();
-            (item.dn).should.be.a.String();
-            (item.config).should.be.an.Object();
-            (item.config_hash).should.be.a.String();
         }
 
         {
@@ -144,9 +115,6 @@ describe('registry-state', function() {
 
             should(myNode!.selfAlertCount).be.eql({ error: 0, warn: 0 });
             should(myNode!.alertCount).be.eql({ error: 11, warn: 11 });
-
-            const myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
-            should(myItemAlerts).not.be.ok();
         }
 
         {
@@ -157,14 +125,6 @@ describe('registry-state', function() {
 
             should(myNode!.selfAlertCount).be.eql({ error: 1, warn: 0});
             should(myNode!.alertCount).be.eql({ error: 1, warn: 0 });
-
-            const myItemAlerts = _.find(bundle.alerts, x => x.dn == myDn);
-            should(myItemAlerts).be.an.Object();
-            should(myItemAlerts!.config).be.an.Array();
-            should(myItemAlerts!.config.length).be.equal(1);
-
-            should(myItemAlerts!.config[0].severity).be.equal("error");
-            should(myItemAlerts!.config[0].msg).be.equal("Service account fluentd-gcp-scaler is not found.");
         }
     })
 
