@@ -25,4 +25,5 @@ export const KIND_TO_USER_MAPPING : Record<string, string> = {
     'launcher': 'Launcher',
     'storclass': 'Storage Class',
     'storage': 'Storage',
+    'image': 'Image',
 }
