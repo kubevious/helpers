@@ -10,7 +10,6 @@ export interface SnapshotItemInfo
     dn: string;
     kind: string;
     config_kind: SnapshotConfigKind;
-    name?: string;
     config: SnapshotNodeConfig | SnapshotPropsConfig | SnapshotAlertsConfig;
 }
 
