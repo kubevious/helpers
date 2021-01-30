@@ -1,11 +1,11 @@
 import _ from 'the-lodash';
 import { makeKey } from './helpers';
 import { parentDn as makeParentDn } from '../dn-utils';
-
+import { SnapshotItemInfo } from '../snapshot/types';
 export class Snapshot
 {
     private _date : any;
-    private _items : Record<string, any> = {};
+    private _items : Record<string, SnapshotItemInfo> = {};
 
     constructor(date: any)
     {
@@ -24,17 +24,17 @@ export class Snapshot
         return _.keys(this._items);
     }
 
-    addItemByKey(key: string, item: any)
+    addItemByKey(key: string, item: SnapshotItemInfo)
     {
         this._items[key] = item;
     }
 
-    addItem(item: any)
+    addItem(item: SnapshotItemInfo)
     {
         this._items[makeKey(item)] = item;
     }
 
-    addItems(items: any[])
+    addItems(items: SnapshotItemInfo[])
     {
         for(var item of items)
         {
@@ -42,7 +42,7 @@ export class Snapshot
         }
     }
 
-    deleteItem(item: any)
+    deleteItem(item: SnapshotItemInfo)
     {
         this.delteById(makeKey(item));
     }
@@ -52,7 +52,7 @@ export class Snapshot
         delete this._items[id];
     }
 
-    getItems()
+    getItems() : SnapshotItemInfo[]
     {
         return _.values(this._items);
     }
@@ -71,7 +71,7 @@ export class Snapshot
         return item;
     }
 
-    findItem(item: any)
+    findItem(item: SnapshotItemInfo)
     {
         return this.findById(makeKey(item));
     }

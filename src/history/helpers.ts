@@ -1,6 +1,7 @@
 import _ from 'the-lodash';
+import { SnapshotItemInfo } from '../snapshot/types';
 
-export function makeKey(item: any) : string {
+export function makeKey(item: SnapshotItemInfo) : string {
 
     if (!item.dn) {
         throw new Error("MISSING DN");
