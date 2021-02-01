@@ -5,6 +5,7 @@ export interface RequestReportSnapshot {
 }
 
 export interface ResponseReportSnapshot {
+    id: string 
 }
 
 export interface RequestReportSnapshotItems {
