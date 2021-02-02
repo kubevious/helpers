@@ -27,6 +27,11 @@ export interface ResponseActivateSnapshot {
     new_snapshot?: boolean
 }
 
+export interface RequestReportConfig {
+    hash: string
+    config: any
+}
+
 export interface ReportableSnapshotItem {
     idHash: string
     present: boolean
