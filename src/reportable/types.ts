@@ -5,7 +5,8 @@ export interface RequestReportSnapshot {
 }
 
 export interface ResponseReportSnapshot {
-    id: string 
+    new_snapshot?: boolean
+    id?: string 
 }
 
 export interface RequestReportSnapshotItems {
