@@ -1,10 +1,10 @@
 import _ from 'the-lodash';
 import { Promise } from 'the-promise';
 import { ILogger } from 'the-logger' ;
-import { Snapshot } from './snapshot';
-import { SnapshotReconstructor } from './snapshot-reconstructor';
+import { DBSnapshot, Snapshot } from './snapshot';
+import { SnapshotReconstructor, SnapshotReconstructorWithHashes } from './snapshot-reconstructor';
 import * as Partitioning from './partitioning';
-import { SnapshotItem, DiffItem, TimelineSample } from './entities'
+import { SnapshotItem, DiffItem, TimelineSample, DBRawSnapItem, DBRawDiffItem, DBRawSnapshot } from './entities'
 
 export class SnapshotReader
 {
@@ -27,15 +27,15 @@ export class SnapshotReader
 
     /*** PUBLIC ***/
 
-    reconstructRecentShapshot() : Promise<Snapshot>
+    reconstructRecentShapshotWithHashes() : Promise<DBSnapshot<DBRawSnapItem>>
     {
         return this._queryRecentSnapshot()
             .then(snapshot => {
                 this.logger.info('[reconstructRecentShapshot] db snapshot: ', snapshot);
                 if (!snapshot) {
-                    return new Snapshot(null);
+                    return new DBSnapshot<DBRawSnapItem>(null);
                 }
-                return this._reconstructSnapshot(snapshot.part, snapshot.id);
+                return this._reconstructSnapshotWithHashes(snapshot.part, snapshot.id);
             })
     }
 
@@ -150,6 +150,44 @@ export class SnapshotReader
         return this._executeSql<SnapshotItem[]>(sql, params);
     }
 
+    querySnapshotItemWithHashes(partition: number, snapshotId: string, configKindFilter?: any, dnFilter?: any) : Promise<DBRawSnapItem[]>
+    {
+        var conditions = [];
+        var params : any[] = []
+
+        conditions.push('`snapshot_id` = ?')
+        params.push(snapshotId);
+
+        this._applyDnFilter(dnFilter, conditions, params);
+
+        configKindFilter = this._massageConfigKind(configKindFilter);
+        if (configKindFilter)
+        {
+            var configSqlParts = []
+            for(var kind of configKindFilter)
+            {
+                configSqlParts.push('`config_kind` = ?');
+                params.push(kind);
+            } 
+            conditions.push('(' + configSqlParts.join(' OR ') + ')');
+        }
+
+        conditions.push('(`snap_items`.`part` = ?)');
+        params.push(partition);
+
+        var sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `config_hash`';
+        sql += ' FROM `snap_items`';
+
+        if (conditions.length > 0)
+        {
+            sql = sql + 
+                ' WHERE '
+                + conditions.join(' AND ');
+        }
+
+        return this._executeSql<DBRawSnapItem[]>(sql, params);
+    }
+
     queryDiffItems(partition: number, diffId: string, configKind?: any, dnFilter?: any)
     {
         var conditions = [];
@@ -193,6 +231,46 @@ export class SnapshotReader
         return this._executeSql<DiffItem[]>(sql, params);
     }
 
+    queryDiffItemsWithHashes(partition: number, diffId: string, configKind?: any, dnFilter?: any) : Promise<DBRawDiffItem[]>
+    {
+        var conditions = [];
+        var params : any[] = []
+
+        conditions.push('`diff_id` = ?')
+        params.push(diffId)
+
+        this._applyDnFilter(dnFilter, conditions, params);
+
+        configKind = this._massageConfigKind(configKind);
+        if (configKind)
+        {
+            var configSqlParts = []
+            for(var kind of configKind)
+            {
+                configSqlParts.push('`config_kind` = ?');
+                params.push(kind);
+            } 
+            conditions.push('(' + configSqlParts.join(' OR ') + ')');
+        }
+
+        conditions.push('(`diff_items`.`part` = ?)');
+        params.push(partition);
+
+        var sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `present`, `config_hash`'
+            + ' FROM `diff_items`'
+            ;
+
+        if (conditions.length > 0)
+        {
+            sql = sql + 
+                ' WHERE '
+                + conditions.join(' AND ');
+        }
+
+        return this._executeSql<DBRawDiffItem[]>(sql, params);
+    }
+
+
     /*** INTERNALS ***/
 
     private _registerStatements()
@@ -226,10 +304,36 @@ export class SnapshotReader
             ;
     }
 
+    private _reconstructSnapshotWithHashes(partition: number, snapshotId: string, date?: any, configKind?: string, dnFilter?: any) : Promise<DBSnapshot<DBRawSnapItem>>
+    {
+        let snapshotReconstructor : SnapshotReconstructorWithHashes;
+        return Promise.resolve()
+            .then(() => this.querySnapshotItemWithHashes(partition, snapshotId, configKind, dnFilter))
+            .then(snapshotItems => {
+                snapshotReconstructor = new SnapshotReconstructorWithHashes(snapshotItems);
+                return this._queryDiffsForSnapshotAndDate(partition, snapshotId, date)
+            })
+            .then(diffs => {
+                return this._queryDiffsItemsWithHashes(diffs, configKind, dnFilter)
+            })
+            .then(diffsItems => {
+                snapshotReconstructor.applyDiffsItems(diffsItems);
+                return snapshotReconstructor.getSnapshot();
+            })
+            ;
+    }
+
     private _queryDiffsItems(diffs: any[], configKind?: any, dnFilter?: any) : Promise<any>
     {
         return Promise.serial(diffs, diff => {
             return this.queryDiffItems(diff.part, diff.id, configKind, dnFilter);
+        });
+    }
+
+    private _queryDiffsItemsWithHashes(diffs: any[], configKind?: any, dnFilter?: any) : Promise<DBRawDiffItem[][]>
+    {
+        return Promise.serial(diffs, diff => {
+            return this.queryDiffItemsWithHashes(diff.part, diff.id, configKind, dnFilter);
         });
     }
 
@@ -276,11 +380,14 @@ export class SnapshotReader
         return this._executeSql(sql, params);
     }
 
-    private _queryRecentSnapshot() : Promise<any>
+    private _queryRecentSnapshot() : Promise<DBRawSnapshot | null>
     {
         return this._execute('GET_RECENT_SNAPSHOT')
             .then(results => {
-                return _.head(results);
+                if (results.length == 0) {
+                    return null;
+                }
+                return <DBRawSnapshot>_.head(results);
             });
     }
 

@@ -1,3 +1,27 @@
+export interface DBRawSnapshot 
+{
+    id: any, 
+    part: any, 
+    date: any, 
+}
+export interface BaseSnapshotItem
+{
+    dn: any, 
+    kind: any, 
+    config_kind: any, 
+    name: any
+}
+
+export interface DBRawSnapItem extends BaseSnapshotItem
+{
+    id: any, 
+    config_hash: any
+}
+export interface DBRawDiffItem extends DBRawSnapItem
+{
+    present: any
+}
+
 export interface SnapshotItem
 {
     id: any, 

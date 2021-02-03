@@ -1,6 +1,84 @@
 import _ from 'the-lodash';
 import { makeKey } from './helpers';
 import { parentDn as makeParentDn } from '../dn-utils';
+import { BaseSnapshotItem } from './entities';
+
+export class DBSnapshot<T extends BaseSnapshotItem>
+{
+    private _date : any;
+    private _items : Record<string, T> = {};
+
+    constructor(date: any)
+    {
+        this._date = date;
+    }
+
+    get date() {
+        return this._date;
+    }
+
+    get count() {
+        return _.keys(this._items).length;
+    }
+
+    get keys() {
+        return _.keys(this._items);
+    }
+
+    addItemByKey(key: string, item: T)
+    {
+        this._items[key] = item;
+    }
+
+    addItem(item: T)
+    {
+        this._items[makeKey(item)] = item;
+    }
+
+    addItems(items: T[])
+    {
+        for(var item of items)
+        {
+            this.addItem(item);
+        }
+    }
+
+    deleteItem(item: T)
+    {
+        this.delteById(makeKey(item));
+    }
+
+    delteById(id: string)
+    {
+        delete this._items[id];
+    }
+
+    getItems() : T[]
+    {
+        return _.values(this._items);
+    }
+
+    getDict()
+    {
+        return _.cloneDeep(this._items);
+    }
+
+    findById(id: string)
+    {
+        var item = this._items[id];
+        if (!item) {
+            return null;
+        }
+        return item;
+    }
+
+    findItem(item: T)
+    {
+        return this.findById(makeKey(item));
+    }
+
+}
+
 
 export class Snapshot
 {
