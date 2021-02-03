@@ -9,12 +9,12 @@ export interface BaseSnapshotItem
     dn: any, 
     kind: any, 
     config_kind: any, 
-    name: any
+    name?: any
 }
 
 export interface DBRawSnapItem extends BaseSnapshotItem
 {
-    id: any, 
+    id?: any, 
     config_hash: any
 }
 export interface DBRawDiffItem extends DBRawSnapItem
