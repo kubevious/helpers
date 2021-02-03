@@ -5,6 +5,7 @@ export interface RequestReportSnapshot {
 }
 
 export interface ResponseReportSnapshot {
+    delay?: boolean
     new_snapshot?: boolean
     id?: string 
 }
