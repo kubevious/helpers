@@ -38,6 +38,14 @@ export class JobDampener<T>
         return this._logger;
     }
 
+    get queueLength() {
+        return this._jobQueue.length;
+    }
+
+    get isBusy() {
+        return this._isProcessing || (this.queueLength > 0);
+    }
+
     acceptJob(data : T, date? : Date)
     {
         if (!date) {
