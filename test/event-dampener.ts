@@ -8,7 +8,7 @@ import { setupLogger, LoggerOptions } from 'the-logger';
 const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
 const logger = setupLogger('test', loggerOptions);
 
-import { EventDampener } from '../src/event-dampener';
+import { EventDampener } from '../src';
 
 describe('event-dampener', function() {
 
