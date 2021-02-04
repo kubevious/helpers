@@ -62,6 +62,7 @@ export class SnapshotReader
                                 .then(config => {
                                     const item = <SnapItemWithConfig>x;
                                     item.config = config;
+                                    finalSnapshot.addItem(item);
                                     return item;
                                 })
                         })
