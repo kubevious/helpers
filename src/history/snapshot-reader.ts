@@ -57,13 +57,22 @@ export class SnapshotReader
                     })
                     .then(snapshot => {
                         const finalSnapshot = new DBSnapshot<SnapItemWithConfig>(snapshot.date);
-                        return Promise.serial(snapshot.getItems(), x => {
-                            return this.queryConfigHash(diffRow.part, x.config_hash)
+                        const nodeItems : SnapItemWithConfig[] = [];
+                        for(let item of snapshot.getItems())
+                        {
+                            const newItem = <SnapItemWithConfig>item;
+                            if (item.config_kind == 'node') {
+                                nodeItems.push(newItem);
+                            } else {
+                                newItem.config = null;
+                                finalSnapshot.addItem(newItem);
+                            }
+                        }
+                        return Promise.serial(nodeItems, item => {
+                            return this.queryConfigHash(diffRow.part, item.config_hash)
                                 .then(config => {
-                                    const item = <SnapItemWithConfig>x;
                                     item.config = config;
                                     finalSnapshot.addItem(item);
-                                    return item;
                                 })
                         })
                         .then(() => finalSnapshot);
