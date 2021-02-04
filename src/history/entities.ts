@@ -12,7 +12,7 @@ export interface DBRawDiff
     snapshot_id: number, 
     date: Date,
     in_snapshot: boolean,
-    snapshot?: {}
+    summary?: {}
 }
 
 export interface BaseSnapshotItem
@@ -59,4 +59,8 @@ export interface TimelineSample
     changes: any, 
     error: any, 
     warn: any
+}
+
+export interface SnapItemWithConfig extends DBRawSnapItem {
+    config: any
 }

@@ -4,7 +4,9 @@ import { ILogger } from 'the-logger' ;
 import { DBSnapshot, Snapshot } from './snapshot';
 import { SnapshotReconstructor, SnapshotReconstructorWithHashes } from './snapshot-reconstructor';
 import * as Partitioning from './partitioning';
-import { SnapshotItem, DiffItem, TimelineSample, DBRawSnapItem, DBRawDiffItem, DBRawSnapshot, DBRawDiff } from './entities'
+import { SnapshotItem, DiffItem, TimelineSample, DBRawSnapItem, DBRawDiffItem, DBRawSnapshot, DBRawDiff, SnapItemWithConfig } from './entities'
+
+export type ConfigKindFilter = undefined | string | string[];
 
 export class SnapshotReader
 {
@@ -27,28 +29,43 @@ export class SnapshotReader
 
     /*** PUBLIC ***/
 
-    reconstructDiffShapshotWithHashes(diffId: number) : Promise<DBSnapshot<DBRawSnapItem>>
+    reconstructDiffNodesShapshot(diffId: number) : Promise<DBSnapshot<SnapItemWithConfig>>
     {
         return this.queryDiffById(diffId)
             .then(diffRow => {
-                this.logger.info('[reconstructDiffShapshotWithHashes] db diff: ', diffRow);
                 if (!diffRow) {
-                    return new DBSnapshot<DBRawSnapItem>(null);
+                    this.logger.warn('[reconstructDiffNodesShapshot] Diff not found: %s', diffId);
+                    return new DBSnapshot<SnapItemWithConfig>(null);
                 }
+
+                this.logger.info('[reconstructDiffNodesShapshot] DiffId: %s, SnapshotId: %s, Date: %s', 
+                    diffRow.id, diffRow.snapshot_id, diffRow.date);
 
                 let snapshotReconstructor : SnapshotReconstructorWithHashes;
                 return Promise.resolve()
-                    .then(() => this.querySnapshotItemWithHashes(diffRow.part, diffRow.snapshot_id))
+                    .then(() => this.querySnapshotItemWithHashes(diffRow.part, diffRow.snapshot_id, 'node'))
                     .then(snapshotItems => {
                         snapshotReconstructor = new SnapshotReconstructorWithHashes(snapshotItems);
                         return this._queryDiffsForDiffId(diffRow.part, diffRow.snapshot_id, diffRow.id!);
                     })
                     .then(diffs => {
-                        return this._queryDiffsItemsWithHashes(diffs)
+                        return this._queryDiffsItemsWithHashes(diffs, 'node')
                     })
                     .then(diffsItems => {
                         snapshotReconstructor.applyDiffsItems(diffsItems);
                         return snapshotReconstructor.getSnapshot();
+                    })
+                    .then(snapshot => {
+                        const finalSnapshot = new DBSnapshot<SnapItemWithConfig>(snapshot.date);
+                        return Promise.serial(snapshot.getItems(), x => {
+                            return this.queryConfigHash(diffRow.part, x.config_hash)
+                                .then(config => {
+                                    const item = <SnapItemWithConfig>x;
+                                    item.config = config;
+                                    return item;
+                                })
+                        })
+                        .then(() => finalSnapshot);
                     })
                     ;
             })
@@ -123,21 +140,21 @@ export class SnapshotReader
         return this._executeSql<TimelineSample[]>(sql, params);
     }
 
-    querySnapshotItems(partition: number, snapshotId: number, configKindFilter?: any, dnFilter?: any)
+    querySnapshotItems(partition: number, snapshotId: number, configKind?: ConfigKindFilter, dnFilter?: any)
     {
-        var conditions = [];
-        var params : any[] = []
+        let conditions = [];
+        let params : any[] = []
 
         conditions.push('`snapshot_id` = ?')
         params.push(snapshotId);
 
         this._applyDnFilter(dnFilter, conditions, params);
 
-        configKindFilter = this._massageConfigKind(configKindFilter);
+        let configKindFilter = this._massageConfigKind(configKind);
         if (configKindFilter)
         {
-            var configSqlParts = []
-            for(var kind of configKindFilter)
+            let configSqlParts = []
+            for(let kind of configKindFilter)
             {
                 configSqlParts.push('`config_kind` = ?');
                 params.push(kind);
@@ -150,7 +167,7 @@ export class SnapshotReader
         params.push(partition);
         params.push(partition);
 
-        var sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `value` as `config`';
+        let sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `value` as `config`';
         sql += ' FROM `snap_items`';
         sql += ' INNER JOIN `config_hashes`';
         sql += ' ON `snap_items`.`config_hash` = `config_hashes`.`key`';
@@ -165,21 +182,21 @@ export class SnapshotReader
         return this._executeSql<SnapshotItem[]>(sql, params);
     }
 
-    querySnapshotItemWithHashes(partition: number, snapshotId: number, configKindFilter?: any, dnFilter?: any) : Promise<DBRawSnapItem[]>
+    querySnapshotItemWithHashes(partition: number, snapshotId: number, configKind?: ConfigKindFilter, dnFilter?: any) : Promise<DBRawSnapItem[]>
     {
-        var conditions = [];
-        var params : any[] = []
+        let conditions = [];
+        let params : any[] = []
 
         conditions.push('`snapshot_id` = ?')
         params.push(snapshotId);
 
         this._applyDnFilter(dnFilter, conditions, params);
 
-        configKindFilter = this._massageConfigKind(configKindFilter);
+        let configKindFilter = this._massageConfigKind(configKind);
         if (configKindFilter)
         {
-            var configSqlParts = []
-            for(var kind of configKindFilter)
+            let configSqlParts = []
+            for(let kind of configKindFilter)
             {
                 configSqlParts.push('`config_kind` = ?');
                 params.push(kind);
@@ -190,7 +207,7 @@ export class SnapshotReader
         conditions.push('(`snap_items`.`part` = ?)');
         params.push(partition);
 
-        var sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `config_hash`';
+        let sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `config_hash`';
         sql += ' FROM `snap_items`';
 
         if (conditions.length > 0)
@@ -205,8 +222,8 @@ export class SnapshotReader
 
     queryDiffItems(partition: number, diffId: string, configKind?: any, dnFilter?: any)
     {
-        var conditions = [];
-        var params : any[] = []
+        let conditions = [];
+        let params : any[] = []
 
         conditions.push('`diff_id` = ?')
         params.push(diffId)
@@ -216,8 +233,8 @@ export class SnapshotReader
         configKind = this._massageConfigKind(configKind);
         if (configKind)
         {
-            var configSqlParts = []
-            for(var kind of configKind)
+            let configSqlParts = []
+            for(let kind of configKind)
             {
                 configSqlParts.push('`config_kind` = ?');
                 params.push(kind);
@@ -230,7 +247,7 @@ export class SnapshotReader
         params.push(partition);
         params.push(partition);
 
-        var sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `present`, `value` as `config`'
+        let sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `present`, `value` as `config`'
             + ' FROM `diff_items`'
             + ' INNER JOIN `config_hashes`'
             + ' ON `diff_items`.`config_hash` = `config_hashes`.`key`'
@@ -246,21 +263,21 @@ export class SnapshotReader
         return this._executeSql<DiffItem[]>(sql, params);
     }
 
-    queryDiffItemsWithHashes(partition: number, diffId: string, configKind?: any, dnFilter?: any) : Promise<DBRawDiffItem[]>
+    queryDiffItemsWithHashes(partition: number, diffId: string, configKind?: ConfigKindFilter, dnFilter?: any) : Promise<DBRawDiffItem[]>
     {
-        var conditions = [];
-        var params : any[] = []
+        let conditions = [];
+        let params : any[] = []
 
         conditions.push('`diff_id` = ?')
         params.push(diffId)
 
         this._applyDnFilter(dnFilter, conditions, params);
 
-        configKind = this._massageConfigKind(configKind);
-        if (configKind)
+        let configKindFilter = this._massageConfigKind(configKind);
+        if (configKindFilter)
         {
-            var configSqlParts = []
-            for(var kind of configKind)
+            let configSqlParts = []
+            for(let kind of configKindFilter)
             {
                 configSqlParts.push('`config_kind` = ?');
                 params.push(kind);
@@ -271,7 +288,7 @@ export class SnapshotReader
         conditions.push('(`diff_items`.`part` = ?)');
         params.push(partition);
 
-        var sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `present`, `config_hash`'
+        let sql = 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `present`, `config_hash`'
             + ' FROM `diff_items`'
             ;
 
@@ -285,6 +302,18 @@ export class SnapshotReader
         return this._executeSql<DBRawDiffItem[]>(sql, params);
     }
 
+    queryConfigHash(partition: number, key: Buffer) : Promise<any | null>
+    {
+        return this._execute('GET_CONFIG_HASH', [ partition, key ])
+            .then(results => {
+                if (results.length == 0) {
+                    return null;
+                }
+                let row : any = _.head(results);
+                return row.value;
+            })
+    }
+
 
     /*** INTERNALS ***/
 
@@ -295,6 +324,8 @@ export class SnapshotReader
         this._registerStatement('GET_DIFF_BY_ID', 'SELECT * FROM `diffs` WHERE `id` = ?;');
         
         this._registerStatement('FIND_DIFF_FOR_DATE', 'SELECT * FROM `diffs` WHERE `date` <= ? ORDER BY `date` DESC LIMIT 1;');
+
+        this._registerStatement('GET_CONFIG_HASH', 'SELECT `value` FROM `config_hashes` WHERE `key` = ? AND `part` = ?;');
     }
 
     private _registerStatement(name: string, sql: string)
@@ -321,24 +352,24 @@ export class SnapshotReader
             ;
     }
 
-    private _reconstructSnapshotWithHashes(partition: number, snapshotId: number, date?: any, configKind?: string, dnFilter?: any) : Promise<DBSnapshot<DBRawSnapItem>>
-    {
-        let snapshotReconstructor : SnapshotReconstructorWithHashes;
-        return Promise.resolve()
-            .then(() => this.querySnapshotItemWithHashes(partition, snapshotId, configKind, dnFilter))
-            .then(snapshotItems => {
-                snapshotReconstructor = new SnapshotReconstructorWithHashes(snapshotItems);
-                return this._queryDiffsForSnapshotAndDate(partition, snapshotId, date)
-            })
-            .then(diffs => {
-                return this._queryDiffsItemsWithHashes(diffs, configKind, dnFilter)
-            })
-            .then(diffsItems => {
-                snapshotReconstructor.applyDiffsItems(diffsItems);
-                return snapshotReconstructor.getSnapshot();
-            })
-            ;
-    }
+    // private _reconstructSnapshotWithHashes(partition: number, snapshotId: number, date?: any, configKind?: string, dnFilter?: any) : Promise<DBSnapshot<DBRawSnapItem>>
+    // {
+    //     let snapshotReconstructor : SnapshotReconstructorWithHashes;
+    //     return Promise.resolve()
+    //         .then(() => this.querySnapshotItemWithHashes(partition, snapshotId, configKind, dnFilter))
+    //         .then(snapshotItems => {
+    //             snapshotReconstructor = new SnapshotReconstructorWithHashes(snapshotItems);
+    //             return this._queryDiffsForSnapshotAndDate(partition, snapshotId, date)
+    //         })
+    //         .then(diffs => {
+    //             return this._queryDiffsItemsWithHashes(diffs, configKind, dnFilter)
+    //         })
+    //         .then(diffsItems => {
+    //             snapshotReconstructor.applyDiffsItems(diffsItems);
+    //             return snapshotReconstructor.getSnapshot();
+    //         })
+    //         ;
+    // }
 
     private _queryDiffsItems(diffs: any[], configKind?: any, dnFilter?: any) : Promise<any>
     {
@@ -347,7 +378,7 @@ export class SnapshotReader
         });
     }
 
-    private _queryDiffsItemsWithHashes(diffs: any[], configKind?: any, dnFilter?: any) : Promise<DBRawDiffItem[][]>
+    private _queryDiffsItemsWithHashes(diffs: any[], configKind?: ConfigKindFilter, dnFilter?: any) : Promise<DBRawDiffItem[][]>
     {
         return Promise.serial(diffs, diff => {
             return this.queryDiffItemsWithHashes(diff.part, diff.id, configKind, dnFilter);
@@ -454,25 +485,25 @@ export class SnapshotReader
 
     /**  **/
 
-    private _massageConfigKind(configKind : any) : any
+    private _massageConfigKind(configKind : ConfigKindFilter) : null | string[]
     {
         if (configKind)
         {
             if (!_.isArray(configKind))
             {
-                configKind = [ configKind ];
+                return [ configKind ];
             }
             else 
             {
                 if (configKind.length == 0)
                 {
-                    configKind = null;
+                    return null;
                 }
             }
         }
         else
         {
-            configKind = null;
+            return null;
         }
         return configKind;
     }
@@ -499,7 +530,7 @@ export class SnapshotReader
 
     private _execute(statementId: string, params?: any) : Promise<any>
     {
-        var statement = this._statements[statementId];
+        let statement = this._statements[statementId];
         return statement.execute(params);
     }
 

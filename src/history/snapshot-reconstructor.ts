@@ -53,7 +53,6 @@ export class SnapshotReconstructorWithHashes
 
 }
 
-
 export class SnapshotReconstructor
 {
     private _snapshot : Snapshot;
