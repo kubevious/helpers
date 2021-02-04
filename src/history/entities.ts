@@ -1,9 +1,20 @@
 export interface DBRawSnapshot 
 {
-    id: any, 
-    part: any, 
-    date: any, 
+    id?: number, 
+    part: number, 
+    date: Date
 }
+
+export interface DBRawDiff 
+{
+    id?: number, 
+    part: number, 
+    snapshot_id: number, 
+    date: Date,
+    in_snapshot: boolean,
+    snapshot?: {}
+}
+
 export interface BaseSnapshotItem
 {
     dn: any, 

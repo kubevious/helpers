@@ -4,7 +4,7 @@ import { ILogger } from 'the-logger' ;
 import { DBSnapshot, Snapshot } from './snapshot';
 import { SnapshotReconstructor, SnapshotReconstructorWithHashes } from './snapshot-reconstructor';
 import * as Partitioning from './partitioning';
-import { SnapshotItem, DiffItem, TimelineSample, DBRawSnapItem, DBRawDiffItem, DBRawSnapshot } from './entities'
+import { SnapshotItem, DiffItem, TimelineSample, DBRawSnapItem, DBRawDiffItem, DBRawSnapshot, DBRawDiff } from './entities'
 
 export class SnapshotReader
 {
@@ -27,15 +27,30 @@ export class SnapshotReader
 
     /*** PUBLIC ***/
 
-    reconstructRecentShapshotWithHashes() : Promise<DBSnapshot<DBRawSnapItem>>
+    reconstructDiffShapshotWithHashes(diffId: number) : Promise<DBSnapshot<DBRawSnapItem>>
     {
-        return this._queryRecentSnapshot()
-            .then(snapshot => {
-                this.logger.info('[reconstructRecentShapshot] db snapshot: ', snapshot);
-                if (!snapshot) {
+        return this.queryDiffById(diffId)
+            .then(diffRow => {
+                this.logger.info('[reconstructDiffShapshotWithHashes] db diff: ', diffRow);
+                if (!diffRow) {
                     return new DBSnapshot<DBRawSnapItem>(null);
                 }
-                return this._reconstructSnapshotWithHashes(snapshot.part, snapshot.id);
+
+                let snapshotReconstructor : SnapshotReconstructorWithHashes;
+                return Promise.resolve()
+                    .then(() => this.querySnapshotItemWithHashes(diffRow.part, diffRow.snapshot_id))
+                    .then(snapshotItems => {
+                        snapshotReconstructor = new SnapshotReconstructorWithHashes(snapshotItems);
+                        return this._queryDiffsForDiffId(diffRow.part, diffRow.snapshot_id, diffRow.id!);
+                    })
+                    .then(diffs => {
+                        return this._queryDiffsItemsWithHashes(diffs)
+                    })
+                    .then(diffsItems => {
+                        snapshotReconstructor.applyDiffsItems(diffsItems);
+                        return snapshotReconstructor.getSnapshot();
+                    })
+                    ;
             })
     }
 
@@ -108,7 +123,7 @@ export class SnapshotReader
         return this._executeSql<TimelineSample[]>(sql, params);
     }
 
-    querySnapshotItems(partition: number, snapshotId: string, configKindFilter?: any, dnFilter?: any)
+    querySnapshotItems(partition: number, snapshotId: number, configKindFilter?: any, dnFilter?: any)
     {
         var conditions = [];
         var params : any[] = []
@@ -150,7 +165,7 @@ export class SnapshotReader
         return this._executeSql<SnapshotItem[]>(sql, params);
     }
 
-    querySnapshotItemWithHashes(partition: number, snapshotId: string, configKindFilter?: any, dnFilter?: any) : Promise<DBRawSnapItem[]>
+    querySnapshotItemWithHashes(partition: number, snapshotId: number, configKindFilter?: any, dnFilter?: any) : Promise<DBRawSnapItem[]>
     {
         var conditions = [];
         var params : any[] = []
@@ -275,7 +290,9 @@ export class SnapshotReader
 
     private _registerStatements()
     {
-        this._registerStatement('GET_RECENT_SNAPSHOT', 'SELECT * FROM `snapshots` ORDER BY `date` DESC LIMIT 1;');
+        this._registerStatement('GET_SNAPSHOT_BY_ID', 'SELECT * FROM `snapshots` WHERE `id` = ?;');
+
+        this._registerStatement('GET_DIFF_BY_ID', 'SELECT * FROM `diffs` WHERE `id` = ?;');
         
         this._registerStatement('FIND_DIFF_FOR_DATE', 'SELECT * FROM `diffs` WHERE `date` <= ? ORDER BY `date` DESC LIMIT 1;');
     }
@@ -285,7 +302,7 @@ export class SnapshotReader
         this._statements[name] = this._driver.statement(sql);
     }
 
-    private _reconstructSnapshot(partition: number, snapshotId: string, date?: any, configKind?: string, dnFilter?: any) : Promise<Snapshot>
+    private _reconstructSnapshot(partition: number, snapshotId: number, date?: any, configKind?: string, dnFilter?: any) : Promise<Snapshot>
     {
         let snapshotReconstructor : SnapshotReconstructor;
         return Promise.resolve()
@@ -304,7 +321,7 @@ export class SnapshotReader
             ;
     }
 
-    private _reconstructSnapshotWithHashes(partition: number, snapshotId: string, date?: any, configKind?: string, dnFilter?: any) : Promise<DBSnapshot<DBRawSnapItem>>
+    private _reconstructSnapshotWithHashes(partition: number, snapshotId: number, date?: any, configKind?: string, dnFilter?: any) : Promise<DBSnapshot<DBRawSnapItem>>
     {
         let snapshotReconstructor : SnapshotReconstructorWithHashes;
         return Promise.resolve()
@@ -349,7 +366,7 @@ export class SnapshotReader
             })
     }
 
-    private _queryDiffsForSnapshotAndDate(partition: number, snapshotId: string, date: any) : Promise<any>
+    private _queryDiffsForSnapshotAndDate(partition: number, snapshotId: number, date: any) : Promise<any>
     {
         let sql = 'SELECT *';
         sql += ' FROM `diffs`';
@@ -380,14 +397,58 @@ export class SnapshotReader
         return this._executeSql(sql, params);
     }
 
-    private _queryRecentSnapshot() : Promise<DBRawSnapshot | null>
+    private _queryDiffsForDiffId(partition: number, snapshotId: number, diffId: number) : Promise<DBRawDiff[]>
     {
-        return this._execute('GET_RECENT_SNAPSHOT')
+        let sql = 'SELECT *';
+        sql += ' FROM `diffs`';
+
+        let params = [];
+        let filters = [];
+
+        filters.push('(`part` = ?)');
+        params.push(partition);
+
+        filters.push('(`in_snapshot` = 0)');
+        
+        filters.push('(`snapshot_id` = ?)')
+        params.push(snapshotId);
+
+        filters.push('(`id` <= ? )')
+        params.push(diffId);
+
+        if (filters.length > 0)
+        {
+            sql += ' WHERE ';
+            sql += filters.join(' AND ');
+        }
+
+        return this._executeSql<DBRawDiff[]>(sql, params);
+    }
+
+    private querySnapshotById(id: number) : Promise<DBRawSnapshot | null>
+    {
+        return this._execute('GET_SNAPSHOT_BY_ID', [ id ])
             .then(results => {
                 if (results.length == 0) {
                     return null;
                 }
-                return <DBRawSnapshot>_.head(results);
+                let item = <DBRawSnapshot>_.head(results);
+                item.date = new Date(item.date);
+                return item;
+            });
+    }
+
+    private queryDiffById(id: number) : Promise<DBRawDiff | null>
+    {
+        return this._execute('GET_DIFF_BY_ID', [ id ])
+            .then(results => {
+                if (results.length == 0) {
+                    return null;
+                }
+                let item = <any>_.head(results);
+                item.date = new Date(item.date);
+                item.in_snapshot = (item.in_snapshot == 1);
+                return <DBRawDiff>item;
             });
     }
 
