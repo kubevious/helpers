@@ -43,13 +43,13 @@ export class SnapshotReader
 
                 let snapshotReconstructor : SnapshotReconstructorWithHashes;
                 return Promise.resolve()
-                    .then(() => this.querySnapshotItemWithHashes(diffRow.part, diffRow.snapshot_id, 'node'))
+                    .then(() => this.querySnapshotItemWithHashes(diffRow.part, diffRow.snapshot_id))
                     .then(snapshotItems => {
                         snapshotReconstructor = new SnapshotReconstructorWithHashes(snapshotItems);
                         return this._queryDiffsForDiffId(diffRow.part, diffRow.snapshot_id, diffRow.id!);
                     })
                     .then(diffs => {
-                        return this._queryDiffsItemsWithHashes(diffs, 'node')
+                        return this._queryDiffsItemsWithHashes(diffs)
                     })
                     .then(diffsItems => {
                         snapshotReconstructor.applyDiffsItems(diffsItems);
