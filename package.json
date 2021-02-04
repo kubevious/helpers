@@ -1,6 +1,6 @@
 {
   "name": "@kubevious/helpers",
-  "version": "1.0.42",
+  "version": "1.0.43",
   "description": "Kubevious Helpers",
   "main": "dist/index.js",
   "types": "dist",
