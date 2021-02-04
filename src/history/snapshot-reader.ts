@@ -305,7 +305,7 @@ export class SnapshotReader
 
     queryConfigHash(partition: number, key: Buffer) : Promise<any | null>
     {
-        return this._execute('GET_CONFIG_HASH', [ partition, key ])
+        return this._execute('GET_CONFIG_HASH', [ key, partition ])
             .then(results => {
                 if (results.length == 0) {
                     return null;
