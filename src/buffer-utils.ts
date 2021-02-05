@@ -16,3 +16,11 @@ export function areEqual(a: (Buffer | null), b : (Buffer | null)) : boolean
         }
     }
 }
+
+export function fromStr(value: string) : Buffer {
+    return Buffer.from(value, 'hex');
+}
+
+export function toStr(value: Buffer) : string {
+    return value.toString('hex');
+}
