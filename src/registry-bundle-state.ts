@@ -48,7 +48,7 @@ export class RegistryBundleState
         return node;
     }
 
-    getNode(dn: string): SnapshotNodeConfig | null
+    getNode(dn: string): BundledNodeConfig | null
     {
         const config = this._nodeConfigs[dn];
         if (!config) {
