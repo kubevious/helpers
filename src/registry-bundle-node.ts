@@ -1,4 +1,4 @@
-import { RegistryBundleState } from "./registry-bundle-state";
+import { BundledNodeConfig, RegistryBundleState } from "./registry-bundle-state";
 import { RegistryStateNode } from "./registry-state-node";
 
 import { SnapshotNodeConfig, AlertCounter, Alert } from './snapshot/types';
@@ -33,7 +33,7 @@ export class RegistryBundleNode
         return this._node.dn;
     }
 
-    get config() : SnapshotNodeConfig {
+    get config() : BundledNodeConfig {
         return this._bundle.getNode(this.dn)!;
     }
 
