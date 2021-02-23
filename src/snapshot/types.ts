@@ -48,5 +48,6 @@ export enum SnapshotConfigKind
 {
     node = 'node',
     props = 'props',
-    alerts = 'alerts'
+    alerts = 'alerts',
+    children = 'children'
 } 
