@@ -5,9 +5,14 @@ export interface RequestReportSnapshot {
 }
 
 export interface ResponseReportSnapshot {
-    delay?: boolean
-    new_snapshot?: boolean
     id?: string 
+    delay?: boolean
+    delaySeconds?: number
+    new_snapshot?: boolean
+    item_reporter_count?: number
+    config_reporter_count?: number
+    config_reporter_size_kb?: number
+    config_reporter_compression?: boolean
 }
 
 export interface RequestReportSnapshotItems {

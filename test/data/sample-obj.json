@@ -1,0 +1,123 @@
+{
+    "kind": "yaml",
+    "id": "config",
+    "title": "Config",
+    "config": {
+        "kind": "ReplicaSet",
+        "apiVersion": "apps/v1",
+        "metadata": {
+            "name": "emailservice-6545668f4f",
+            "namespace": "hipster",
+            "selfLink": "/apis/apps/v1/namespaces/hipster/replicasets/emailservice-6545668f4f",
+            "uid": "5bd1e06f-431c-11ea-96d3-42010a80017a",
+            "resourceVersion": "41595615",
+            "generation": 2,
+            "creationTimestamp": "2020-01-30T04:52:46Z",
+            "labels": {
+                "app": "emailservice",
+                "pod-template-hash": "6545668f4f"
+            },
+            "annotations": {
+                "deployment.kubernetes.io/desired-replicas": "1",
+                "deployment.kubernetes.io/max-replicas": "2",
+                "deployment.kubernetes.io/revision": "3"
+            },
+            "ownerReferences": [
+                {
+                    "apiVersion": "apps/v1",
+                    "kind": "Deployment",
+                    "name": "emailservice",
+                    "uid": "a0685217-3441-11ea-9cdc-42010a8001cf",
+                    "controller": true,
+                    "blockOwnerDeletion": true
+                }
+            ]
+        },
+        "spec": {
+            "replicas": 1,
+            "selector": {
+                "matchLabels": {
+                    "app": "emailservice",
+                    "pod-template-hash": "6545668f4f"
+                }
+            },
+            "template": {
+                "metadata": {
+                    "creationTimestamp": null,
+                    "labels": {
+                        "app": "emailservice",
+                        "pod-template-hash": "6545668f4f"
+                    }
+                },
+                "spec": {
+                    "containers": [
+                        {
+                            "name": "server",
+                            "image": "gcr.io/google-samples/microservices-demo/emailservice:v0.1.3",
+                            "ports": [
+                                {
+                                    "containerPort": 8080,
+                                    "protocol": "TCP"
+                                }
+                            ],
+                            "env": [
+                                {
+                                    "name": "PORT",
+                                    "value": "8080"
+                                },
+                                {
+                                    "name": "ENABLE_PROFILER",
+                                    "value": "0"
+                                }
+                            ],
+                            "resources": {
+                                "limits": {
+                                    "cpu": "100m",
+                                    "memory": "128Mi"
+                                },
+                                "requests": {
+                                    "cpu": "50m",
+                                    "memory": "64Mi"
+                                }
+                            },
+                            "livenessProbe": {
+                                "exec": {
+                                    "command": ["/bin/grpc_health_probe", "-addr=:8080"]
+                                },
+                                "timeoutSeconds": 1,
+                                "periodSeconds": 5,
+                                "successThreshold": 1,
+                                "failureThreshold": 3
+                            },
+                            "readinessProbe": {
+                                "exec": {
+                                    "command": ["/bin/grpc_health_probe", "-addr=:8080"]
+                                },
+                                "timeoutSeconds": 1,
+                                "periodSeconds": 5,
+                                "successThreshold": 1,
+                                "failureThreshold": 3
+                            },
+                            "terminationMessagePath": "/dev/termination-log",
+                            "terminationMessagePolicy": "File",
+                            "imagePullPolicy": "IfNotPresent"
+                        }
+                    ],
+                    "restartPolicy": "Always",
+                    "terminationGracePeriodSeconds": 5,
+                    "dnsPolicy": "ClusterFirst",
+                    "securityContext": {},
+                    "schedulerName": "default-scheduler"
+                }
+            }
+        },
+        "status": {
+            "replicas": 1,
+            "fullyLabeledReplicas": 1,
+            "readyReplicas": 1,
+            "availableReplicas": 1,
+            "observedGeneration": 2
+        }
+    },
+    "tooltip": "Kubernetes YAML Configuration"
+}
