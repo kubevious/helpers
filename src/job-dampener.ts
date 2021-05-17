@@ -99,9 +99,8 @@ export class JobDampener<T>
                 this._logger.error("[_tryProcessJob] ", reason);
                 this._isProcessing = false;
                 this._retryJob(job);
+                return null;
             })
-
-        return null;
     }
 
     private _processJob(job: Job<T>)

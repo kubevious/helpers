@@ -38,9 +38,17 @@ export interface RequestReportConfig {
     config: any
 }
 
+export interface RequestReportChunks {
+    chunks: ReportableDataItem[]
+}
+
 export interface ReportableSnapshotItem {
     idHash: string
     present: boolean
     configHash?: string
 }
 
+export interface ReportableDataItem {
+    hash: string,
+    data: string
+}
