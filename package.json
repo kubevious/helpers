@@ -20,7 +20,7 @@
     "moment": "^2.29.1",
     "the-lodash": "^2.0.9",
     "the-logger": "^2.0.9",
-    "the-promise": "^2.0.12"
+    "the-promise": "^2.0.13"
   },
   "devDependencies": {
     "@types/mocha": "^8.0.3",

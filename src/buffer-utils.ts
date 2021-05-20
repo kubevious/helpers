@@ -24,3 +24,11 @@ export function fromStr(value: string) : Buffer {
 export function toStr(value: Buffer) : string {
     return value.toString('hex');
 }
+
+export function parseUUID(value: string) : Buffer | null {
+    const buf = fromStr(value);
+    if (buf.length != 16) {
+        return null
+    }
+    return buf;
+}
