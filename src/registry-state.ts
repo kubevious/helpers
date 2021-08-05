@@ -303,14 +303,14 @@ export class RegistryState
             for(let propName of _.keys(propsMap))
             {
                 const props = propsMap[propName];
-                const filePath = `registry/${dn}/props/${props.id}.json`;
+                const filePath = `${relPath}/${dn}/props/${props.id}.json`;
                 await logger.outputFile(filePath, props);
             }
         }
 
         for(let dn of _.keys(this._alertsMap))
         {
-            const filePath = `registry/${dn}/alerts.json`;
+            const filePath = `${relPath}/${dn}/alerts.json`;
             const alerts = this._alertsMap[dn];
             await logger.outputFile(filePath, alerts);
         }
