@@ -128,6 +128,15 @@ describe('registry-state', function() {
         }
     })
 
+    it('debug-output-to-file-test', function() {
+        const state = loadRegistryState('snapshot-items-small.json');
+
+        const fileLoggerOptions = new LoggerOptions().enableFile(true).cleanOnStart(true).pretty(true);
+        const fileLogger = setupLogger('FILE', fileLoggerOptions);
+
+        return state.debugOutputToDir(fileLogger, 'my-registry');
+    });
+
 });
 
 function loadRegistryState(filePath: string) : RegistryState

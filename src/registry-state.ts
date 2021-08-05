@@ -5,12 +5,13 @@ import { RegistryStateNode } from './registry-state-node';
 import { RegistryBundleState } from './registry-bundle-state';
 
 import { Alert, SnapshotAlertsConfig, SnapshotConfigKind, SnapshotInfo, SnapshotItemInfo, SnapshotNodeConfig, SnapshotPropsConfig  } from './snapshot/types';
+import { ILogger } from 'the-logger';
 
 export type ItemProperties = Record<string, SnapshotPropsConfig>;
 
 export class RegistryState
 {
-    private _date : any;
+    private _date : Date;
 
     private _nodeMap : Record<string, RegistryStateNode> = {};
     private _childrenMap : Record<string, string[]> = {};
@@ -279,4 +280,39 @@ export class RegistryState
         return this._stateBundle!;
     }
 
+    async debugOutputToDir(logger: ILogger, relPath: string)
+    {
+        for(let dn of _.keys(this._nodeMap))
+        {
+            const filePath = `registry/${dn}/node.json`;
+            const node = this._nodeMap[dn];
+            await logger.outputFile(filePath, node.config);
+        }
+
+        for(let dn of _.keys(this._childrenMap))
+        {
+            const filePath = `${relPath}/${dn}/children.json`;
+            const children = this._childrenMap[dn];
+            await logger.outputFile(filePath, children);
+        }
+ 
+        for(let dn of _.keys(this._propertiesMap))
+        {
+            const propsMap = this._propertiesMap[dn];
+
+            for(let propName of _.keys(propsMap))
+            {
+                const props = propsMap[propName];
+                const filePath = `registry/${dn}/props/${props.id}.json`;
+                await logger.outputFile(filePath, props);
+            }
+        }
+
+        for(let dn of _.keys(this._alertsMap))
+        {
+            const filePath = `registry/${dn}/alerts.json`;
+            const alerts = this._alertsMap[dn];
+            await logger.outputFile(filePath, alerts);
+        }
+    }
 }
