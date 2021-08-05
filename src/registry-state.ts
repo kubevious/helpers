@@ -284,7 +284,7 @@ export class RegistryState
     {
         for(let dn of _.keys(this._nodeMap))
         {
-            const filePath = `registry/${dn}/node.json`;
+            const filePath = `${relPath}/${dn}/node.json`;
             const node = this._nodeMap[dn];
             await logger.outputFile(filePath, node.config);
         }
