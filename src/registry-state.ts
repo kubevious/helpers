@@ -303,7 +303,7 @@ export class RegistryState
             for(let propName of _.keys(propsMap))
             {
                 const props = propsMap[propName];
-                const filePath = `${relPath}/${dn}/props/${props.id}.json`;
+                const filePath = `${relPath}/${dn}/props-${props.id}.json`;
                 await logger.outputFile(filePath, props);
             }
         }
