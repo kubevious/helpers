@@ -312,7 +312,9 @@ export class RegistryState
         {
             const filePath = `${relPath}/${dn}/alerts.json`;
             const alerts = this._alertsMap[dn];
-            await logger.outputFile(filePath, alerts);
+            if (alerts.length > 0) {
+                await logger.outputFile(filePath, alerts);
+            }
         }
     }
 }
