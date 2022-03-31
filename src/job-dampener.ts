@@ -10,6 +10,8 @@ export class JobDampener<T>
 {
     private _logger : ILogger;
 
+    private _options: JobDampenerOptions;
+
     private _handlerCb : JobDampenerHandler<T>;
 
     private _jobQueue : Job<T>[] = [];
@@ -23,15 +25,17 @@ export class JobDampener<T>
         this._logger = logger;
         this._handlerCb = handler;
 
-        if (options) {
-            if (_.isNotNullOrUndefined(options.queueSize)) {
-                this._queueSize = options.queueSize!;
-            }
+        this._options = options ?? {};
 
-            if (_.isNotNullOrUndefined(options.rescheduleTimeoutMs)) {
-                this._rescheduleTimeoutMs = options.rescheduleTimeoutMs!;
-            }
+        if (_.isNotNullOrUndefined(this._options.queueSize)) {
+            this._queueSize = this._options.queueSize!;
         }
+
+        if (_.isNotNullOrUndefined(this._options.rescheduleTimeoutMs)) {
+            this._rescheduleTimeoutMs = this._options.rescheduleTimeoutMs!;
+        }
+
+        this._notifyState();
     }
 
     get logger() {
@@ -68,6 +72,8 @@ export class JobDampener<T>
 
     private _tryProcessJob()
     {
+        this._notifyState();
+
         if (this._isProcessing) {
             return;
         }
@@ -77,7 +83,7 @@ export class JobDampener<T>
             return;
         }
 
-        let job = _.head(this._jobQueue)!;
+        const job = _.head(this._jobQueue)!;
         this._jobQueue.shift();
         this._isProcessing = true;
         this._processJob(job)
@@ -107,7 +113,7 @@ export class JobDampener<T>
     {
         this.logger.info("[_processJob] BEGIN. Date: %s", job.date.toISOString());
 
-        return Promise.resolve()
+        return Promise.resolve(null)
             .then(() => {
                 return this._handlerCb(job.data, job.date);
             })
@@ -150,6 +156,32 @@ export class JobDampener<T>
         }, this._rescheduleTimeoutMs);
     }
 
+    private _notifyState()
+    {
+        const state : JobDampenerState = {
+            inQueue: this._jobQueue.length,
+            isProcessing: this._isProcessing,
+            totalJobs: this._jobQueue.length + (this._isProcessing ? 1 : 0)
+        }
+
+        this.logger.debug("[_notifyState] state: ", state);
+
+        return Promise.resolve(null)
+            .then(() => {
+                if (this._options.stateMonitorCb) {
+                    return this._options.stateMonitorCb(state);
+                }
+                // return this._handlerCb(job.data, job.date);
+            })
+            .then(() => {
+                return null;
+            })
+            .catch(reason => {
+                this.logger.error('[_notifyProgress] ERROR: ', reason);
+                return null;
+            });
+    }
+
 }
 
 interface Job<T>
@@ -160,6 +192,15 @@ interface Job<T>
 
 export interface JobDampenerOptions
 {
-    queueSize?: number
-    rescheduleTimeoutMs?: number
+    queueSize?: number;
+    rescheduleTimeoutMs?: number;
+    stateMonitorCb?: (state: JobDampenerState) => any;
 }
+
+export interface JobDampenerState
+{
+    inQueue: number;
+    isProcessing: boolean;
+    totalJobs: number
+}
+
