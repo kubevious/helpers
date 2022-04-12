@@ -17,6 +17,7 @@ export class JobDampener<T>
     private _jobQueue : Job<T>[] = [];
     private _isProcessing = false;
     private _isScheduled = false;
+    private _isPaused = false;
     private _queueSize = 1;
     private _rescheduleTimeoutMs = 5000;
 
@@ -63,6 +64,15 @@ export class JobDampener<T>
         this._tryProcessJob();
     }
 
+    pause() {
+        this._isPaused = true;
+    }
+
+    resume() {
+        this._isPaused = false;
+        this._tryProcessJob();
+    }
+
     private _filterJobs()
     {
         while(this._jobQueue.length > this._queueSize) {
@@ -72,40 +82,46 @@ export class JobDampener<T>
 
     private _tryProcessJob()
     {
-        this._notifyState();
-
-        if (this._isProcessing) {
-            return;
-        }
-
-        if (this._jobQueue.length == 0) {
-            this._logger.info("[_tryProcessJob] empty");
-            return;
-        }
-
-        const job = _.head(this._jobQueue)!;
-        this._jobQueue.shift();
-        this._isProcessing = true;
-        this._processJob(job)
-            .then(result => {
-                this._isProcessing = false;
-                if (result.success)
-                {
-                    this._logger.info("[_tryProcessJob] END");
-                    this._tryProcessJob();
+        Promise.resolve(null)
+            .then(() => this._notifyState())
+            .then(() => {
+                if (this._isProcessing) {
+                    return;
                 }
-                else
-                {
-                    this._logger.warn("[_tryProcessJob] last job failed");
-                    this._retryJob(job);
+        
+                if (this._isPaused) {
+                    return;
                 }
-                return null;
-            })
-            .catch(reason => {
-                this._logger.error("[_tryProcessJob] ", reason);
-                this._isProcessing = false;
-                this._retryJob(job);
-                return null;
+        
+                if (this._jobQueue.length == 0) {
+                    this._logger.info("[_tryProcessJob] empty");
+                    return;
+                }
+        
+                const job = _.head(this._jobQueue)!;
+                this._jobQueue.shift();
+                this._isProcessing = true;
+                this._processJob(job)
+                    .then(result => {
+                        this._isProcessing = false;
+                        if (result.success)
+                        {
+                            this._logger.info("[_tryProcessJob] END");
+                            this._tryProcessJob();
+                        }
+                        else
+                        {
+                            this._logger.warn("[_tryProcessJob] last job failed");
+                            this._retryJob(job);
+                        }
+                        return null;
+                    })
+                    .catch(reason => {
+                        this._logger.error("[_tryProcessJob] ", reason);
+                        this._isProcessing = false;
+                        this._retryJob(job);
+                        return null;
+                    })
             })
     }
 
@@ -190,11 +206,12 @@ interface Job<T>
     data: T
 }
 
+export type JobStateMonitorCallback = (state: JobDampenerState) => any;
 export interface JobDampenerOptions
 {
     queueSize?: number;
     rescheduleTimeoutMs?: number;
-    stateMonitorCb?: (state: JobDampenerState) => any;
+    stateMonitorCb?: JobStateMonitorCallback;
 }
 
 export interface JobDampenerState

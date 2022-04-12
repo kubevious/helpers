@@ -25,7 +25,7 @@ describe('job-dampener', function() {
 
         should(dampener.isBusy).be.false();
 
-        dampener.acceptJob("aaa");
+        dampener.acceptJob("aaa"); // will be skipped
         dampener.acceptJob("bbb"); // will be skipped
         dampener.acceptJob("ccc"); // will be skipped
         dampener.acceptJob("ddd");
@@ -34,8 +34,8 @@ describe('job-dampener', function() {
 
         return Promise.timeout(500)
             .then(() => {
-                should(processedData.length).be.equal(2);
-                should(processedData).be.eql(['aaa', 'ddd']);
+                should(processedData.length).be.equal(1);
+                should(processedData).be.eql(['ddd']);
             })
             .then(() => {
                 should(dampener.isBusy).be.false();
@@ -44,8 +44,7 @@ describe('job-dampener', function() {
                 return Promise.timeout(500)
             })
             .then(() => {
-                should(processedData).be.eql(['aaa', 'ddd', 'eee', 'fff']);
-                should(processedData.length).be.equal(4);
+                should(processedData).be.eql(['ddd', 'fff']);
                 should(dampener.isBusy).be.false();
             })
 
@@ -71,17 +70,16 @@ describe('job-dampener', function() {
 
         should(dampener.isBusy).be.false();
 
-        dampener.acceptJob("aaa");
+        dampener.acceptJob("aaa"); // will be skipped
         dampener.acceptJob("bbb"); // will be skipped
-        dampener.acceptJob("ccc"); // will be skipped
-        dampener.acceptJob("ddd");
+        dampener.acceptJob("ccc"); 
 
         should(dampener.isBusy).be.true();
 
         return Promise.timeout(500)
             .then(() => {
-                should(processedData.length).be.equal(2);
-                should(processedData).be.eql(['aaa', 'ddd']);
+                should(processedData.length).be.equal(1);
+                should(processedData).be.eql(['ccc']);
             })
             .then(() => {
                 should(dampener.isBusy).be.false();
@@ -90,8 +88,7 @@ describe('job-dampener', function() {
                 return Promise.timeout(500)
             })
             .then(() => {
-                should(processedData).be.eql(['aaa', 'ddd', 'eee', 'fff']);
-                should(processedData.length).be.equal(4);
+                should(processedData).be.eql(['ccc', 'fff']);
                 should(dampener.isBusy).be.false();
             })
 
