@@ -123,6 +123,7 @@ export class JobDampener<T>
                         return null;
                     })
             })
+            .then(() => null)
     }
 
     private _processJob(job: Job<T>)
