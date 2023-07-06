@@ -1,14 +1,14 @@
 import 'mocha';
-import should = require('should');
+import should from 'should';
 
 import _ from 'the-lodash';
-import { Promise } from 'the-promise';
 import { setupLogger, LoggerOptions } from 'the-logger';
 
 const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
 const logger = setupLogger('test', loggerOptions);
 
 import { JobDampener } from '../src';
+import { MyPromise } from 'the-promise';
 
 describe('job-dampener', function() {
 
@@ -32,7 +32,7 @@ describe('job-dampener', function() {
 
         should(dampener.isBusy).be.true();
 
-        return Promise.timeout(500)
+        return MyPromise.delay(500)
             .then(() => {
                 should(processedData.length).be.equal(1);
                 should(processedData).be.eql(['ddd']);
@@ -41,7 +41,7 @@ describe('job-dampener', function() {
                 should(dampener.isBusy).be.false();
                 dampener.acceptJob("eee");
                 dampener.acceptJob("fff");
-                return Promise.timeout(500)
+                return MyPromise.delay(500)
             })
             .then(() => {
                 should(processedData).be.eql(['ddd', 'fff']);
@@ -76,7 +76,7 @@ describe('job-dampener', function() {
 
         should(dampener.isBusy).be.true();
 
-        return Promise.timeout(500)
+        return MyPromise.delay(500)
             .then(() => {
                 should(processedData.length).be.equal(1);
                 should(processedData).be.eql(['ccc']);
@@ -85,7 +85,7 @@ describe('job-dampener', function() {
                 should(dampener.isBusy).be.false();
                 dampener.acceptJob("eee");
                 dampener.acceptJob("fff");
-                return Promise.timeout(500)
+                return MyPromise.delay(500)
             })
             .then(() => {
                 should(processedData).be.eql(['ccc', 'fff']);

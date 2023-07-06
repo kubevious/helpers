@@ -1,6 +1,6 @@
 import _ from 'the-lodash';
-import { Promise } from 'the-promise';
 import { ILogger } from 'the-logger' ;
+import { MyPromise } from 'the-promise';
 
 export class RetryableAction
 {
@@ -46,7 +46,7 @@ export class RetryableAction
                     {
                         this._logger.warn("RetryableAction failed, will retry...");
                         this._delay = Math.min(this._maxDelay, this._delay * this._delayCoeff);
-                        return Promise.timeout(this._delay)
+                        return MyPromise.delay(this._delay)
                             .then(() => this._tryRun());
                     }
                 }
@@ -68,7 +68,7 @@ export class RetryableAction
     {
         try
         {
-            let result = this._action();
+            const result = this._action();
             return Promise.resolve(result);
         }
         catch(reason)

@@ -1,10 +1,10 @@
 import _ from 'the-lodash';
-import { Promise } from 'the-promise';
+import { MyPromise } from 'the-promise';
 import { deflateRaw, inflateRaw } from 'zlib';
 
 export function compressString(str: string) : Promise<string>
 {
-    return Promise.construct((resolve, reject) => {
+    return MyPromise.construct((resolve, reject) => {
         deflateRaw(str, (error, result) => {
             if (error) {
                 reject(error);
@@ -33,7 +33,7 @@ export function decompressObj(value: string) : Promise<any>
 
 export function decompressString(value: string) : Promise<string>
 {
-    return Promise.construct((resolve, reject) => {
+    return MyPromise.construct((resolve, reject) => {
         const buf = Buffer.from(value, 'base64');
         inflateRaw(buf, (error, result) => {
             if (error) {

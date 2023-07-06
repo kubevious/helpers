@@ -1,14 +1,14 @@
 import 'mocha';
-import should = require('should');
+import should from 'should';
 
 import _ from 'the-lodash';
-import { Promise } from 'the-promise';
 import { setupLogger, LoggerOptions } from 'the-logger';
 
 const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
 const logger = setupLogger('test', loggerOptions);
 
 import { RetryableAction } from '../src/retryable-action';
+import { MyPromise } from 'the-promise';
 
 describe('retryable-action', function() {
 
@@ -26,7 +26,7 @@ describe('retryable-action', function() {
 
     it('case-02', function() {
         const action = new RetryableAction(logger, () => {
-            return Promise.timeout(20)
+            return MyPromise.delay(20)
                 .then(() => 444)
         });
         
@@ -43,7 +43,7 @@ describe('retryable-action', function() {
                 errorCount--;
                 throw new Error("I failed")
             }
-            return Promise.timeout(20)
+            return MyPromise.delay(20)
                 .then(() => 555)
         }, {
             initalDelay: 100,
@@ -65,7 +65,7 @@ describe('retryable-action', function() {
                 errorCount--;
                 throw new Error("I failed")
             }
-            return Promise.timeout(20)
+            return MyPromise.delay(20)
                 .then(() => 555)
         }, {
             initalDelay: 100,
@@ -91,7 +91,7 @@ describe('retryable-action', function() {
                 errorCount--;
                 throw new Error("I failed")
             }
-            return Promise.timeout(20)
+            return MyPromise.delay(20)
                 .then(() => 555)
         }, {
             initalDelay: 100,

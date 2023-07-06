@@ -3,7 +3,7 @@ import moment from 'moment';
 export class StopWatch
 {
     private _startMoment : moment.Moment;
-    private _durationMs : number = 0;
+    private _durationMs = 0;
 
     constructor()
     {
@@ -16,7 +16,7 @@ export class StopWatch
 
     stop()
     {
-        var now = moment(new Date());
+        const now = moment(new Date());
         this._durationMs = moment.duration(now.diff(this._startMoment)).asMilliseconds();
         return this._durationMs;
     }

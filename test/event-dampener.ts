@@ -1,14 +1,14 @@
 import 'mocha';
-import should = require('should');
+import should from 'should';
 
 import _ from 'the-lodash';
-import { Promise } from 'the-promise';
 import { setupLogger, LoggerOptions } from 'the-logger';
 
 const loggerOptions = new LoggerOptions().enableFile(false).pretty(true);
 const logger = setupLogger('test', loggerOptions);
 
 import { EventDampener } from '../src';
+import { MyPromise } from 'the-promise';
 
 describe('event-dampener', function() {
 
@@ -32,7 +32,7 @@ describe('event-dampener', function() {
                 foundParallelProcessing = true;
             }
 
-            return Promise.timeout(10 * 1000)
+            return MyPromise.delay(10 * 1000)
                 .then(() => {
                     currentlyProcessing --;
                     logger.info("    Processing completed.");
@@ -46,23 +46,23 @@ describe('event-dampener', function() {
         logger.info("Trigger. 3");
         dampener.trigger();
 
-        return Promise.timeout(1000)
+        return MyPromise.delay(1000)
             .then(() => {
                 should(triggerCount).be.equal(0);
-                return Promise.timeout(10 * 1000);
+                return MyPromise.delay(10 * 1000);
             })
             .then(() => {
                 should(triggerCount).be.equal(1);
                 logger.info("Trigger. 4");
                 dampener.trigger();
-                return Promise.timeout(1 * 1000);
+                return MyPromise.delay(1 * 1000);
             })
             .then(() => {
                 logger.info("Trigger. 5");
                 dampener.trigger();
             })
             .then(() => {
-                return Promise.timeout(15 * 1000);
+                return MyPromise.delay(15 * 1000);
             })
             .then(() => {
                 logger.info("Everything should be finished by now.");

@@ -1,18 +1,18 @@
 import 'mocha';
-import should = require('should');
+import should from 'should';
 
 import _ from 'the-lodash';
-import { Promise } from 'the-promise';
 
 import { StopWatch } from '../src/stopwatch';
+import { MyPromise } from 'the-promise';
 
 describe('stopwatch', function() {
 
     it('test-1', function() {
-        var stopwatch = new StopWatch();
-        return Promise.timeout(200)
+        const stopwatch = new StopWatch();
+        return MyPromise.delay(200)
             .then(() => {
-                var ms = stopwatch.stop();
+                const ms = stopwatch.stop();
                 should(ms).not.be.above(400);
                 should(ms).not.be.below(150);
 
