@@ -1,6 +1,6 @@
 {
   "name": "@kubevious/helpers",
-  "version": "1.0.66",
+  "version": "1.0.67",
   "description": "Kubevious Helpers",
   "main": "dist/index.js",
   "types": "dist",
@@ -32,7 +32,7 @@
     "prettier": "^2.8.8",
     "should": "^13.2.3",
     "ts-node": "^10.7.0",
-    "typescript": "^5.0.4"    
+    "typescript": "^5.0.4"
   },
   "resolutions": {
     "the-lodash": "^2.1.2",
