@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       moment:
-        specifier: ^2.29.1
+        specifier: ^2.30.1
         version: 2.30.1
       the-lodash:
         specifier: ^2.1.2
@@ -25,16 +25,16 @@ importers:
         specifier: ^10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: ^18.16.3
+        specifier: ^18.19.130
         version: 18.19.130
       '@typescript-eslint/eslint-plugin':
-        specifier: ^5.59.2
+        specifier: ^5.62.0
         version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: ^5.59.2
+        specifier: ^5.62.0
         version: 5.62.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
-        specifier: ^8.39.0
+        specifier: ^8.57.1
         version: 8.57.1
       mocha:
         specifier: ^11.7.6
@@ -46,10 +46,10 @@ importers:
         specifier: ^13.2.3
         version: 13.2.3
       ts-node:
-        specifier: ^10.7.0
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@18.19.130)(typescript@5.9.3)
       typescript:
-        specifier: ^5.0.4
+        specifier: ^5.9.3
         version: 5.9.3
 
 packages:
