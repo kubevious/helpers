@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-latest
+    container:
+      image: kubevious/node-builder:26-v1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Prepare Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Compile
+        run: npm run build
+
+      - name: Run Unit Tests
+        run: npm test
+
+      - name: Publish
+        if: >-
+          github.ref == 'refs/heads/master' &&
+          github.event_name == 'push' &&
+          !contains(github.event.head_commit.message, 'Version Release')
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global user.email "cicd@kubevious.io"
+          git config --global user.name "Kubevious CI/CD"
+          npm version patch -m "Version Release v%s"
+          git push
+          git push --tags
+          npm publish
