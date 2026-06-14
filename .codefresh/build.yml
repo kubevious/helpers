@@ -43,7 +43,7 @@ steps:
     image: 'kubevious/node-builder:14'
     working_directory: "${{CICD_REPO_PATH}}"
     commands:
-      - yarn install --frozen-lockfile
+      - pnpm install --frozen-lockfile
 
   compile:
     title: Compile
