@@ -1,3 +1,6 @@
 kind: service
 name: helpers
 description: helpers
+
+profiles:
+  - node_library
