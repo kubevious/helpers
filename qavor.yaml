@@ -2,5 +2,9 @@ kind: service
 name: helpers
 description: helpers
 
+env:
+  common:
+    NPM_DEPENDENCIES: the-lodash the-logger the-promise
+
 profiles:
   - node_library

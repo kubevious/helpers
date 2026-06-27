@@ -1,8 +1,8 @@
 #!/bin/bash
 MY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 MY_DIR="$(dirname $MY_PATH)"
-cd $MY_DIR
+cd "$MY_DIR"
 
-rm -rf logs
+SERVICE_NAME=$(yq ".name" qavor.yaml)
 
-npm test ${@}
+qavor test --only "${SERVICE_NAME}" --serial --verbose ${@}
